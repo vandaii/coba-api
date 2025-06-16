@@ -14,11 +14,10 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('employee_id')->unique();
-            $table->string('name')->nullable(false);
-            $table->string('email')->unique()->nullable(false);
-            $table->string('password')->nullable(false);
-            $table->string('confirmed_password')->nullable(false);
-            $table->string('phone')->nullable(false);
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->string('password');
+            $table->string('phone');
             $table->string('store_location')->nullable();
             $table->string('photo_profile')->nullable();
             $table->string('role')->default('User Outlet');
@@ -48,8 +47,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('users');
     }
 };

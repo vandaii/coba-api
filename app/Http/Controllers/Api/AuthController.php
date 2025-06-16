@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -12,66 +11,66 @@ use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'employee_id' => 'required|string|unique:users',
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|unique:users',
-            'password' => 'required|string|min:8',
-            'confirmed_password' => 'required|string|min:8',
-            'phone' => 'required|string|max:20',
-            'store_location' => 'nullable|string|max:255',
-            'photo_profile' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-        ]);
+   // AuthController
 
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
+public function register(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'employee_id' => 'required|string|unique:users',
+        'name' => 'required|string|max:255',
+        'email' => 'required|string|email|unique:users',
+        'password' => 'required|string|min:8|confirmed', 
+        'phone' => 'required|string|max:20',
+        'store_location' => 'nullable|string|max:255',
+        'photo_profile' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
+    ]);
 
-        if ($validator->validated()['password'] !== $validator->validated()['confirmed_password']) {
-            return response()->json([
-                'errors' => [
-                    'message' => 'The password and confirmed password must match.'
-                ]
-            ], 422);
-        }
-
-        $user = User::create([
-            'employee_id' => $request->employee_id,
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'confirmed_password' => Hash::make($request->password),
-            'phone' => $request->phone,
-            'store_location' => $request->store_location,
-            'photo_profile' => $request->file('photo_profile') ? $request->file('photo_profile')->store('photos', 'public') : null,
-        ]);
-
-        $token = $user->createToken('auth_token')->plainTextToken;
-
+    if ($validator->fails()) {
         return response()->json([
-            'data' => new UserResource($user),
-            'access_token' => $token,
-            'token_type' => 'Bearer'
-        ]);
+            'message' => 'Validation failed',
+            'errors' => $validator->errors()
+        ], 422);
     }
+
+    $user = User::create([
+        'employee_id' => $request->employee_id,
+        'name' => $request->name,
+        'email' => $request->email,
+        'password' => Hash::make($request->password),
+        'phone' => $request->phone,
+        'store_location' => $request->store_location ?? null,
+        'photo_profile' => $request->file('photo_profile')
+            ? $request->file('photo_profile')->store('photos', 'public')
+            : null,
+    ]);
+
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    return response()->json([
+        'data' => new UserResource($user),
+        'access_token' => $token,
+        'token_type' => 'Bearer',
+    ], 201);
+}
+
 
     public function login(Request $request)
     {
+        // Attempt login
         if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json([
                 'message' => 'Unauthorized'
             ], 401);
         }
 
+        // Get user and generate token
         $user = User::where('email', $request->email)->firstOrFail();
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'message' => 'Login success',
             'access_token' => $token,
-            'token_type' => 'Bearer'
+            'token_type' => 'Bearer',
         ]);
     }
 
@@ -79,12 +78,12 @@ class AuthController extends Controller
     {
         $user = $request->user();
 
+        // Validate update data
         $validator = Validator::make($request->all(), [
             'name' => 'nullable|string|max:255',
             'email' => 'nullable|string|email|unique:users,email,' . $user->id,
             'phone' => 'nullable|string|max:20',
-            'password' => 'nullable|string|min:8',
-            'confirmed_password' => 'nullable|string|min:8|same:password',
+            'password' => 'nullable|string|min:8|confirmed',
             'store_location' => 'nullable|string|max:255',
             'photo_profile' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
@@ -93,12 +92,12 @@ class AuthController extends Controller
             return response()->json($validator->errors(), 422);
         }
 
+        // Update data
         $updateData = array_filter([
             'name' => $request->name,
             'email' => $request->email,
             'phone' => $request->phone,
             'password' => Hash::make($request->password),
-            'confirmed_password' => Hash::make($request->confirmed_password),
             'store_location' => $request->store_location,
         ]);
 

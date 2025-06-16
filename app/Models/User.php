@@ -23,7 +23,6 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'confirmed_password',
         'phone',
         'store_location',
         'photo_profile',
@@ -36,7 +35,6 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
-        'confirmed_password',
         'remember_token',
     ];
 
@@ -53,24 +51,24 @@ class User extends Authenticatable
         ];
     }
 
-    protected static function boot()
-    {
-        parent::boot();
-        self::creating(function ($model) {
-            $getUser = self::orderBy('employee_id', 'desc')->first();
+    // protected static function boot()
+    // {
+    //     parent::boot();
+    //     self::creating(function ($model) {
+    //         $getUser = self::orderBy('employee_id', 'desc')->first();
 
-            if ($getUser) {
-                $latestID = intval(substr($getUser->employee_id, 4));
-                $nextID = $latestID + 1;
-            } else {
-                $nextID = 1;
-            }
+    //         if ($getUser) {
+    //             $latestID = intval(substr($getUser->employee_id, 4));
+    //             $nextID = $latestID + 1;
+    //         } else {
+    //             $nextID = 1;
+    //         }
 
-            $model->employee_id = 'HS-' . sprintf('%04s', $nextID);
-            while (self::where('employee_id', $model->employee_id)->exists()) {
-                $nextID++;
-                $model->employee_id = 'HS-' . sprintf('%04s', $nextID);
-            }
-        });
-    }
+    //         $model->employee_id = 'HS-' . sprintf('%04s', $nextID);
+    //         while (self::where('employee_id', $model->employee_id)->exists()) {
+    //             $nextID++;
+    //             $model->employee_id = 'HS-' . sprintf('%04s', $nextID);
+    //         }
+    //     });
+    // }
 }

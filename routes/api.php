@@ -13,7 +13,7 @@ use App\Http\Resources\UserResource;
 
 // Route::post('/person', [PersonController::class, 'store']);
 
-Route::post('register', [AuthController::class, 'register']);
+Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
