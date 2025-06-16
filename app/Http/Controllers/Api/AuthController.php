@@ -46,14 +46,15 @@ class AuthController extends Controller
             'phone' => $request->phone,
             'store_location' => $request->store_location,
             'photo_profile' => $request->file('photo_profile') ? $request->file('photo_profile')->store('photos', 'public') : null,
+            'role' => $request->role ?? 'User Outlet'
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
+            'message' => 'Register success',
             'data' => new UserResource($user),
             'access_token' => $token,
-            'token_type' => 'Bearer'
         ]);
     }
 
@@ -71,7 +72,6 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Login success',
             'access_token' => $token,
-            'token_type' => 'Bearer'
         ]);
     }
 
