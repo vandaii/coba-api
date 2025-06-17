@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -11,47 +12,47 @@ use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
-   // AuthController
+    // AuthController
 
-public function register(Request $request)
-{
-    $validator = Validator::make($request->all(), [
-        'employee_id' => 'required|string|unique:users',
-        'name' => 'required|string|max:255',
-        'email' => 'required|string|email|unique:users',
-        'password' => 'required|string|min:8|confirmed', // Laravel cari password_confirmation otomatis
-        'phone' => 'required|string|max:20',
-        'store_location' => 'nullable|string|max:255',
-        'photo_profile' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
-    ]);
+    public function register(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'employee_id' => 'required|string|unique:users',
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+            'phone' => 'required|string|max:20',
+            'store_location' => 'nullable|string|max:255',
+            'photo_profile' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
 
-    if ($validator->fails()) {
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user = User::create([
+            'employee_id' => $request->employee_id,
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'phone' => $request->phone,
+            'store_location' => $request->store_location ?? null,
+            'photo_profile' => $request->file('photo_profile')
+                ? $request->file('photo_profile')->store('photos', 'public')
+                : null,
+        ]);
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
         return response()->json([
-            'message' => 'Validation failed',
-            'errors' => $validator->errors()
-        ], 422);
+            'data' => new UserResource($user),
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+        ], 201);
     }
-
-    $user = User::create([
-        'employee_id' => $request->employee_id,
-        'name' => $request->name,
-        'email' => $request->email,
-        'password' => Hash::make($request->password),
-        'phone' => $request->phone,
-        'store_location' => $request->store_location ?? null,
-        'photo_profile' => $request->file('photo_profile')
-            ? $request->file('photo_profile')->store('photos', 'public')
-            : null,
-    ]);
-
-    $token = $user->createToken('auth_token')->plainTextToken;
-
-    return response()->json([
-        'data' => new UserResource($user),
-        'access_token' => $token,
-        'token_type' => 'Bearer',
-    ], 201);
-}
 
 
     public function login(Request $request)
