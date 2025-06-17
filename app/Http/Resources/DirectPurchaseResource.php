@@ -22,7 +22,7 @@ class DirectPurchaseResource extends JsonResource
             'expenseType' => $this->expense_type,
             'items' => DirectPurchaseItemResource::collection($this->items),
             'totalAmmount' => $this->total_ammount,
-            'purchaseProof' => $this->purchase_proof,
+            'purchase_proof' => $this->purchase_proof ? url('storage/' . $this->purchase_proof) : null,
             'note' => $this->note,
             'status' => $this->status,
             'approveAreaManager' => $this->approve_area_manager,

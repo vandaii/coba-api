@@ -56,20 +56,47 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        // Attempt login
-        if (!Auth::attempt($request->only('email', 'password'))) {
+        //Memakai login pada saat testing
+        $validator = Validator::make($request->all(), [
+            'login' => 'required|string',  // This will accept employee_id, email, or phone
+            'password' => 'required|string'
+        ]);
+
+        if ($validator->fails()) {
             return response()->json([
-                'message' => 'Unauthorized'
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Check which field was used for login
+        $loginField = filter_var($request->login, FILTER_VALIDATE_EMAIL)
+            ? 'email'
+            : (is_numeric($request->login) ? 'phone' : 'employee_id');
+
+        $credentials = [
+            $loginField => $request->login,
+            'password' => $request->password
+        ];
+
+        if (!Auth::attempt($credentials)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid credentials'
             ], 401);
         }
 
-        // Get user and generate token
-        $user = User::where('email', $request->email)->firstOrFail();
+        $user = User::where($loginField, $request->login)->firstOrFail();
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
-            'message' => 'Login success',
-            'access_token' => $token,
+            'status' => true,
+            'message' => 'Login successful',
+            'data' => new UserResource($user),
+            'token' => [
+                'access_token' => $token,
+                'token_type' => 'Bearer'
+            ]
         ]);
     }
 

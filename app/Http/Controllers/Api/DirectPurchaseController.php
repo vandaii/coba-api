@@ -40,13 +40,18 @@ class DirectPurchaseController extends Controller
         //Memulai transaksi database
         DB::beginTransaction();
         try {
+
+            $purchaseProof = null;
+            if ($request->hasFile('purchase_proof')) {
+                $purchaseProof = $request->file('purchase_proof')->store('purchase_proofs', 'public');
+            }
             //Membuat data Direct Purchase
             $directPurchase = DirectPurchase::create([
                 'date' => $request->date,
                 'supplier' => $request->supplier,
                 'expense_type' => $request->expense_type ?? 'Inventory',
                 'total_amount' => $request->total_amount,
-                'purchase_proof' => $request->purchase_proof,
+                'purchase_proof' => $purchaseProof,
                 'note' => $request->note,
                 'status' => $request->status ?? 'Pending Area Manager',
                 'approve_area_manager' => $request->approve_area_manager ?? false,
