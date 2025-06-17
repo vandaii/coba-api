@@ -19,7 +19,7 @@ public function register(Request $request)
         'employee_id' => 'required|string|unique:users',
         'name' => 'required|string|max:255',
         'email' => 'required|string|email|unique:users',
-        'password' => 'required|string|min:8|confirmed', 
+        'password' => 'required|string|min:8|confirmed', // Laravel cari password_confirmation otomatis
         'phone' => 'required|string|max:20',
         'store_location' => 'nullable|string|max:255',
         'photo_profile' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
