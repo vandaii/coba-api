@@ -30,4 +30,5 @@ Route::prefix('direct-purchase')->group(function () {
     Route::post('/add', [DirectPurchaseController::class, 'store']);
     Route::get('/{id}', [DirectPurchaseController::class, 'show']);
     Route::post('/{id}/approve-area-manager', [DirectPurchaseController::class, 'approveAreaManager']);
+    Route::post('/{id}/approve-accounting', [DirectPurchaseController::class, 'approveAccounting']);
 });

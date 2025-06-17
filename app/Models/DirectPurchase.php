@@ -32,23 +32,23 @@ class DirectPurchase extends Model
     protected static function boot()
     {
         parent::boot();
-        self::creating(function ($model) {
-            $latestID = self::latest('created_at')->first();
 
-            $currentYear = date('Y');
-            $currentMonth = date('m');
-            $currentDay = date('d');
+        static::creating(function ($model) {
+            $prefix = 'DP-1C';
+            $date = now()->format('Ymd');
 
-            $directPurchaseIDPrefix = 'DP-1C' . $currentYear . $currentMonth . $currentDay;
+            $latestPurchase = static::where('no_direct_purchase', 'like', $prefix . $date . '%')
+                ->orderBy('no_direct_purchase', 'desc')
+                ->first();
 
-            if ($latestID && strpos($latestID->no_direct_purchase, $directPurchaseIDPrefix)) {
-                $latestIDNumber = intval(substr($latestID->no_direct_purchase, -3));
-                $nextIDNumber = $latestIDNumber + 1;
+            if ($latestPurchase) {
+                $lastNumber = (int) substr($latestPurchase->no_direct_purchase, -3);
+                $nextNumber = $lastNumber + 1;
             } else {
-                $nextIDNumber = 1;
+                $nextNumber = 1;
             }
 
-            $model->no_direct_purchase = $directPurchaseIDPrefix . sprintf('%03s', $nextIDNumber);
+            $model->no_direct_purchase = $prefix . $date . sprintf('%03d', $nextNumber);
         });
     }
 }

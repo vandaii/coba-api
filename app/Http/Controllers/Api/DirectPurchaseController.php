@@ -113,4 +113,32 @@ class DirectPurchaseController extends Controller
             'data' => new DirectPurchaseResource($directPurchase),
         ]);
     }
+
+    public function approveAccounting(Request $request, $id)
+    {
+        $directPurchase = DirectPurchase::with('items')->findOrFail($id);
+
+        $directPurchase->update([
+            'approve_accounting' => $request->approve_accounting ?? true,
+        ]);
+
+        if ($directPurchase->status == 'Pending Area Manager') {
+            return response()->json([
+                'error' => [
+                    'message' => 'Purchase must be approved by area manager first'
+                ],
+            ], 400);
+        }
+
+        if ($directPurchase->approve_accounting === true) {
+            $directPurchase->update([
+                'status' => 'Approve Accounting'
+            ]);
+        }
+
+        return response()->json([
+            'Message' => 'Accounting Approved',
+            'data' => new DirectPurchaseResource($directPurchase),
+        ]);
+    }
 }
