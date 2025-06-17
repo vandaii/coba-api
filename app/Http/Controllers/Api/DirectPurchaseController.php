@@ -6,12 +6,16 @@ use Illuminate\Http\Request;
 use App\Models\DirectPurchase;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\DirectPurchaseCollection;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\DirectPurchaseResource;
 
 class DirectPurchaseController extends Controller
 {
-    public function index() {}
+    public function index()
+    {
+        return new DirectPurchaseCollection(DirectPurchase::all());
+    }
 
     public function store(Request $request)
     {
@@ -44,7 +48,9 @@ class DirectPurchaseController extends Controller
                 'total_amount' => $request->total_amount,
                 'purchase_proof' => $request->purchase_proof,
                 'note' => $request->note,
-                'status' => $request->status ?? 'Pending Area Manager'
+                'status' => $request->status ?? 'Pending Area Manager',
+                'approve_area_manager' => $request->approve_area_manager ?? false,
+                'approve_accounting' => $request->approve_accounting ?? false,
             ]);
 
             $totalAmount = 0;
@@ -79,5 +85,29 @@ class DirectPurchaseController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function show($id)
+    {
+        $directPurchase = DirectPurchase::with('items')->findOrFail($id);
+
+        return new DirectPurchaseResource($directPurchase);
+    }
+
+    public function approveAreaManager(Request $request, $id)
+    {
+        $directPurchase = DirectPurchase::with('items')->findOrFail($id);
+
+        $directPurchase->update([
+            'approve_area_manager' => $request->approve_area_manager ?? true,
+        ]);
+
+        if ($directPurchase->approve_area_manager === true) {
+            $directPurchase->update([
+                'status' => 'Approve Area Manager'
+            ]);
+        }
+
+        return new DirectPurchaseResource($directPurchase);
     }
 }

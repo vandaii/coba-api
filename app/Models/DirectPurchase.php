@@ -15,6 +15,8 @@ class DirectPurchase extends Model
         'purchase_proof',
         'note',
         'status',
+        'approve_area_manager',
+        'approve_accounting',
     ];
 
     public function items()
@@ -31,20 +33,22 @@ class DirectPurchase extends Model
     {
         parent::boot();
         self::creating(function ($model) {
-            $getDirectPurchase = self::orderBy('no_direct_purchase', 'desc')->first();
+            $latestID = self::latest('created_at')->first();
 
-            if ($getDirectPurchase) {
-                $latestID = intval(substr($getDirectPurchase->no_direct_purchase, 4));
-                $nextID = $latestID + 1;
+            $currentYear = date('Y');
+            $currentMonth = date('m');
+            $currentDay = date('d');
+
+            $directPurchaseIDPrefix = 'DP-1C' . $currentYear . $currentMonth . $currentDay;
+
+            if ($latestID && strpos($latestID->no_direct_purchase, $directPurchaseIDPrefix)) {
+                $latestIDNumber = intval(substr($latestID->no_direct_purchase, -3));
+                $nextIDNumber = $latestIDNumber + 1;
             } else {
-                $nextID = 1;
+                $nextIDNumber = 1;
             }
 
-            $model->no_direct_purchase = 'DP-' . sprintf('%04s', $nextID);
-            while (self::where('no_direct_purchase', $model->no_direct_purchase)->exists()) {
-                $nextID++;
-                $model->no_direct_purchase = 'DP-' . sprintf('%04s', $nextID);
-            }
+            $model->no_direct_purchase = $directPurchaseIDPrefix . sprintf('%03s', $nextIDNumber);
         });
     }
 }

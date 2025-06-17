@@ -21,6 +21,9 @@ return new class extends Migration
             $table->string('purchase_proof')->nullable();
             $table->string('note')->nullable();
             $table->string('status')->default('Pending Area Manager');
+            $table->boolean('approve_area_manager')->default(false);
+            $table->boolean('approve_accounting')->default(false);
+
             $table->timestamps();
         });
     }
