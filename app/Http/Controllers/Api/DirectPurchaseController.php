@@ -117,14 +117,14 @@ class DirectPurchaseController extends Controller
     public function approveAccounting(Request $request, $id)
     {
         try {
-            $user = $request->user();
+            // $user = $request->user();
 
-            if ($user->role !== 'Accounting') {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Unauthorized. Only Accounting can approve.'
-                ], 403);
-            }
+            // if ($user->role !== 'Accounting') {
+            //     return response()->json([
+            //         'status' => false,
+            //         'message' => 'Unauthorized. Only Accounting can approve.'
+            //     ], 403);
+            // }
 
             $directPurchase = DirectPurchase::findOrFail($id);
 
@@ -136,7 +136,7 @@ class DirectPurchaseController extends Controller
             }
 
             // Check current status
-            if ($directPurchase->status !== 'Pending Accounting') {
+            if ($directPurchase->status !== 'Approve Area Manager') {
                 return response()->json([
                     'status' => false,
                     'message' => 'Purchase is not pending accounting approval'
