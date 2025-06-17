@@ -95,7 +95,6 @@ class AuthController extends Controller
             'data' => new UserResource($user),
             'token' => [
                 'access_token' => $token,
-                'token_type' => 'Bearer'
             ]
         ]);
     }
