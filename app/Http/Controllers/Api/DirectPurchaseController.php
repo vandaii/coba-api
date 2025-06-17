@@ -116,29 +116,50 @@ class DirectPurchaseController extends Controller
 
     public function approveAccounting(Request $request, $id)
     {
-        $directPurchase = DirectPurchase::with('items')->findOrFail($id);
+        try {
+            $user = $request->user();
 
-        $directPurchase->update([
-            'approve_accounting' => $request->approve_accounting ?? true,
-        ]);
+            if ($user->role !== 'Accounting') {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Unauthorized. Only Accounting can approve.'
+                ], 403);
+            }
 
-        if ($directPurchase->status == 'Pending Area Manager') {
-            return response()->json([
-                'error' => [
-                    'message' => 'Purchase must be approved by area manager first'
-                ],
-            ], 400);
-        }
+            $directPurchase = DirectPurchase::findOrFail($id);
 
-        if ($directPurchase->approve_accounting === true) {
+            if (!$directPurchase->approve_area_manager) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Purchase must be approved by Area Manager first'
+                ], 400);
+            }
+
+            // Check current status
+            if ($directPurchase->status !== 'Pending Accounting') {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Purchase is not pending accounting approval'
+                ], 400);
+            }
+
+            DB::beginTransaction();
+
             $directPurchase->update([
-                'status' => 'Approve Accounting'
+                'status' => 'Approved',
+                'approve_accounting' => true,
             ]);
-        }
 
-        return response()->json([
-            'Message' => 'Accounting Approved',
-            'data' => new DirectPurchaseResource($directPurchase),
-        ]);
+            DB::commit();
+
+            return new DirectPurchaseResource($directPurchase);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'Approval failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }
