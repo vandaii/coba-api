@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class UserResource extends JsonResource
+class DirectPurchaseItemResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,13 +16,10 @@ class UserResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'employeeID' => $this->employee_id,
-            'name' => $this->name,
-            'email' => $this->email,
-            'phone' => $this->phone,
-            'role' => $this->role,
-            'storeLocation' => $this->store_location,
-            'photoProfile' => $this->photo_profile,
+            'item_name' => $this->item_name,
+            'quantity' => $this->quantity,
+            'price' => $this->price,
+            'total_price' => $this->subtotal,
         ];
     }
 }

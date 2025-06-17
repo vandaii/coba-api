@@ -39,19 +39,18 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'phone' => $request->phone,
-            'store_location' => $request->store_location ?? null,
-            'photo_profile' => $request->file('photo_profile')
-                ? $request->file('photo_profile')->store('photos', 'public')
-                : null,
+            'store_location' => $request->store_location,
+            'photo_profile' => $request->file('photo_profile') ? $request->file('photo_profile')->store('photos', 'public') : null,
+            'role' => $request->role ?? 'User Outlet'
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
+            'message' => 'Register success',
             'data' => new UserResource($user),
             'access_token' => $token,
-            'token_type' => 'Bearer',
-        ], 201);
+        ]);
     }
 
 
@@ -71,7 +70,6 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Login success',
             'access_token' => $token,
-            'token_type' => 'Bearer',
         ]);
     }
 
