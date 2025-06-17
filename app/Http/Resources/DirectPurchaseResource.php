@@ -25,6 +25,8 @@ class DirectPurchaseResource extends JsonResource
             'purchaseProof' => $this->purchase_proof,
             'note' => $this->note,
             'status' => $this->status,
+            'approveAreaManager' => $this->approve_area_manager,
+            'approveAccounting' => $this->approve_accounting,
         ];
     }
 }

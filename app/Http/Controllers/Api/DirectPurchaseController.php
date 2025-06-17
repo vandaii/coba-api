@@ -108,6 +108,9 @@ class DirectPurchaseController extends Controller
             ]);
         }
 
-        return new DirectPurchaseResource($directPurchase);
+        return response()->json([
+            'Message' => 'Area Manager Approved',
+            'data' => new DirectPurchaseResource($directPurchase),
+        ]);
     }
 }
