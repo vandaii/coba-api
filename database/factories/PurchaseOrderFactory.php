@@ -17,7 +17,9 @@ class PurchaseOrderFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'purchase_order_date' => $this->faker->date(),
+            'supplier' => $this->faker->company(),
+            'status' => 'Shipping'
         ];
     }
 }

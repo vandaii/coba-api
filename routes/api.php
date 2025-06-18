@@ -6,7 +6,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DirectPurchaseController;
 use App\Http\Controllers\Api\PersonController;
+use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Resources\UserResource;
+use App\Models\PurchaseOrder;
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
@@ -31,4 +33,9 @@ Route::prefix('direct-purchase')->group(function () {
     Route::get('/{id}', [DirectPurchaseController::class, 'show']);
     Route::post('/{id}/approve-area-manager', [DirectPurchaseController::class, 'approveAreaManager']);
     Route::post('/{id}/approve-accounting', [DirectPurchaseController::class, 'approveAccounting']);
+});
+
+Route::prefix('purchase-order')->group(function () {
+    Route::get('/', [PurchaseOrderController::class, 'index']);
+    Route::get('/{id}', [PurchaseOrderController::class, 'show']);
 });

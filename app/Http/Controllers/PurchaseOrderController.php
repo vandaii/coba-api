@@ -10,6 +10,12 @@ class PurchaseOrderController extends Controller
 {
     public function index()
     {
-        return new PurchaseOrderResource(PurchaseOrder::all());
+        return PurchaseOrder::all();
+    }
+
+    public function show($id)
+    {
+        $purchaseOrder = PurchaseOrder::all()->findOrFail($id);
+        return $purchaseOrder;
     }
 }
