@@ -15,6 +15,10 @@ class GRPO extends Model
         'shipper_name',
         'receive_name',
         'supplier',
+        'item_code',
+        'item_name',
+        'item_quantity',
+        'item_unit',
         'packing_slip',
         'notes'
     ];

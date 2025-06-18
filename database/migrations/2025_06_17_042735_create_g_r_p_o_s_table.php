@@ -20,6 +20,10 @@ return new class extends Migration
             $table->string('shipper_name');
             $table->string('receive_name');
             $table->string('supplier');
+            $table->string('item_code');
+            $table->string('item_name');
+            $table->string('item_quantity');
+            $table->string('item_unit');
             $table->string('packing_slip');
             $table->text('notes');
             $table->timestamps();
