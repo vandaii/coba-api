@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PurchaseOrder extends Model
 {
@@ -16,6 +17,11 @@ class PurchaseOrder extends Model
         'supplier',
         'status'
     ];
+
+    public function GRPOs(): HasMany
+    {
+        return $this->hasMany(GRPO::class);
+    }
 
     protected static function boot()
     {
