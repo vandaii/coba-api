@@ -12,9 +12,53 @@ use App\Http\Resources\DirectPurchaseResource;
 
 class DirectPurchaseController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return new DirectPurchaseCollection(DirectPurchase::all());
+        try {
+            $query = DirectPurchase::with(['items']);
+
+            // Search Direct Purchase
+            if ($request->has('search')) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('no_direct_purchase', 'like', "%{$search}%")
+                        ->orWhere('supplier', 'like', "%{$search}%")
+                        ->orWhere('expense_type', 'like', "%{$search}%");
+                });
+            }
+
+            // Filter by status
+            if ($request->has('status')) {
+                $query->where('status', $request->status);
+            }
+
+            // Filter berdasarkan tanggal
+            if ($request->has('start_date') && $request->has('end_date')) {
+                $query->whereBetween('created_at', [
+                    $request->start_date . ' 00:00:00',
+                    $request->end_date . ' 23:59:59'
+                ]);
+            }
+
+            // Sort by latest by default
+            $directPurchases = $query->latest()->paginate(10);
+
+            return response()->json([
+                'message' => 'Direct purchases retrieved successfully',
+                'data' => DirectPurchaseResource::collection($directPurchases),
+                'meta' => [
+                    'current_page' => $directPurchases->currentPage(),
+                    'last_page' => $directPurchases->lastPage(),
+                    'total_records' => $directPurchases->total(),
+                    'per_page' => $directPurchases->perPage()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to retrieve direct purchases',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function store(Request $request)
