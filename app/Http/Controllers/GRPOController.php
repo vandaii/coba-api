@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\GRPOResource;
 use App\Models\GRPO;
 use App\Models\Item;
 use Illuminate\Http\Request;
@@ -14,7 +15,82 @@ class GRPOController extends Controller
 {
     public function index()
     {
-        return GRPO::all();
+        return GRPOResource::collection(GRPO::with('items')->get());
+    }
+
+    public function search(Request $request)
+    {
+        try {
+            $query = GRPO::query();
+
+            // Search by no_grpo
+            if ($request->has('search')) {
+                $search = $request->search;
+                $query->where('no_grpo', 'LIKE', "%{$search}%")
+                    ->orWhere('no_po', 'LIKE', "%{$search}%")
+                    ->orWhere('supplier', 'LIKE', "%{$search}%");
+            }
+
+            // Filter by date range
+            if ($request->has('start_date') && $request->has('end_date')) {
+                $query->whereBetween('receive_date', [$request->start_date, $request->end_date]);
+            }
+
+            $grpos = $query->get();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $grpos
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function filterShipping()
+    {
+        try {
+            $shippingPOs = PurchaseOrder::where('status', 'shipping')
+                ->get();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $shippingPOs
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function filterReceived()
+    {
+        try {
+            $receivedGRPOs = GRPO::with(['purchaseOrder' => function ($query) {
+                $query->where('status', 'received');
+            }])
+                ->whereHas('purchaseOrder', function ($query) {
+                    $query->where('status', 'received');
+                })
+                ->select('g_r_p_o_s.*', 'purchase_order_date')
+                ->join('purchase_orders', 'g_r_p_o_s.no_po', '=', 'purchase_orders.no_purchase_order')
+                ->get();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $receivedGRPOs,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function store(Request $request)
@@ -93,10 +169,7 @@ class GRPOController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'GRPO created successfully',
-                'data' => [
-                    'grpo' => $grpo,
-                    'items' => $grpo->items,
-                ]
+                'data' => new GRPOResource($grpo),
             ], 201);
         } catch (\Exception $e) {
             DB::rollBack();

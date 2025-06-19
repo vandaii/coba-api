@@ -20,9 +20,9 @@ class GRPO extends Model
         'notes'
     ];
 
-    public function PurchaseOrder(): BelongsTo
+    public function purchaseOrder()
     {
-        return $this->belongsTo(PurchaseOrder::class);
+        return $this->belongsTo(PurchaseOrder::class, 'no_po', 'no_purchase_order');
     }
 
     public function Items(): HasMany
