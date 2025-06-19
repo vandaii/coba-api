@@ -4,21 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class GRPO extends Model
 {
     protected $fillable = [
         'no_grpo',
-        'po_id',
+        'no_po',
         'receive_date',
         'expense_type',
         'shipper_name',
         'receive_name',
         'supplier',
-        'item_code',
-        'item_name',
-        'item_quantity',
-        'item_unit',
         'packing_slip',
         'notes'
     ];
@@ -26,5 +23,10 @@ class GRPO extends Model
     public function PurchaseOrder(): BelongsTo
     {
         return $this->belongsTo(PurchaseOrder::class);
+    }
+
+    public function Items(): HasMany
+    {
+        return $this->hasMany(Item::class, 'no_grpo', 'no_grpo');
     }
 }

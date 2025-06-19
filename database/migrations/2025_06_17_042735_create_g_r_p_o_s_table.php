@@ -14,19 +14,17 @@ return new class extends Migration
         Schema::create('g_r_p_o_s', function (Blueprint $table) {
             $table->id();
             $table->string('no_grpo')->unique();
-            $table->foreignId('po_id')->constrained()->onDelete('cascade');
+            $table->string('no_po');
             $table->date('receive_date');
             $table->string('expense_type')->default('Inventory');
             $table->string('shipper_name');
             $table->string('receive_name');
             $table->string('supplier');
-            $table->string('item_code');
-            $table->string('item_name');
-            $table->string('item_quantity');
-            $table->string('item_unit');
-            $table->string('packing_slip');
+            $table->string('packing_slip')->nullable();
             $table->text('notes');
             $table->timestamps();
+
+            $table->foreign('no_po')->references('no_purchase_order')->on('purchase_orders')->onDelete('cascade');
         });
     }
 
