@@ -2,18 +2,22 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\User;
+use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
-use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
-    // AuthController
-
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -23,7 +27,7 @@ class AuthController extends Controller
             'password' => 'required|string|min:8|confirmed',
             'phone' => 'required|string|max:20',
             'store_location' => 'nullable|string|max:255',
-            'photo_profile' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'photo_profile' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -40,7 +44,7 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
             'phone' => $request->phone,
             'store_location' => $request->store_location,
-            'photo_profile' => $request->file('photo_profile') ? $request->file('photo_profile')->store('photos', 'public') : null,
+            'photo_profile' => $request->file('photo_profile')?->store('photos', 'public'),
             'role' => $request->role ?? 'User Outlet'
         ]);
 
@@ -53,51 +57,125 @@ class AuthController extends Controller
         ]);
     }
 
+    public function forgotPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users'
+        ]);
+
+        try {
+            // Delete any existing tokens
+            DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+            // Create new token
+            $token = Str::random(64);
+
+            // Store token
+            DB::table('password_reset_tokens')->insert([
+                'email' => $request->email,
+                'token' => $token,
+                'created_at' => Carbon::now()
+            ]);
+
+            // Send email without view
+            Mail::raw("Your password reset token is: $token", function ($message) use ($request) {
+                $message->to($request->email)
+                    ->subject('Reset Password Notification')
+                    ->from(config('mail.from.address'), config('mail.from.name'));
+            });
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Password reset token sent to your email'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users',
+            'token' => 'required',
+            'password' => 'required|confirmed|min:8',
+        ]);
+
+        try {
+            $passwordReset = DB::table('password_reset_tokens')
+                ->where('email', $request->email)
+                ->where('token', $request->token)
+                ->first();
+
+            if (!$passwordReset) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid token!'
+                ], 400);
+            }
+
+            // Update user password
+            $user = User::where('email', $request->email)->first();
+            $user->password = Hash::make($request->password);
+            $user->save();
+
+            // Delete the token
+            DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Password has been reset successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 
     public function login(Request $request)
     {
-        //Memakai login pada saat testing
-        $validator = Validator::make($request->all(), [
-            'login' => 'required|string',  // This will accept employee_id, email, or phone
-            'password' => 'required|string'
+        $request->validate([
+            'login' => 'required|string', // This will accept employee_id, phone, or email
+            'password' => 'required',
+            'remember' => 'sometimes|boolean'
         ]);
 
-        if ($validator->fails()) {
+        try {
+            // Check which field was used for login
+            $loginField = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : (is_numeric($request->login) ? 'phone' : 'employee_id');
+
+            $credentials = [
+                $loginField => $request->login,
+                'password' => $request->password
+            ];
+
+            if (!Auth::attempt($credentials, $request->remember)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid credentials'
+                ], 401);
+            }
+
+            $user = User::where($loginField, $request->login)->first();
+            $token = $user->createToken('auth_token')->plainTextToken;
+
             return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        // Check which field was used for login
-        $loginField = filter_var($request->login, FILTER_VALIDATE_EMAIL)
-            ? 'email'
-            : (is_numeric($request->login) ? 'phone' : 'employee_id');
-
-        $credentials = [
-            $loginField => $request->login,
-            'password' => $request->password
-        ];
-
-        if (!Auth::attempt($credentials)) {
+                'status' => 'success',
+                'user' => new UserResource($user),
+                'token' => $token,
+            ]);
+        } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
-                'message' => 'Invalid credentials'
-            ], 401);
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
         }
-
-        $user = User::where($loginField, $request->login)->firstOrFail();
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Login successful',
-            'data' => new UserResource($user),
-            'token' => [
-                'access_token' => $token,
-                'token_type' => 'Bearer'
-            ]
-        ]);
     }
 
     public function update(Request $request)

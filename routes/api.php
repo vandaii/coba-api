@@ -16,6 +16,8 @@ use App\Http\Resources\UserResource;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('forgot-password', [AuthController::class, 'forgotPassword'])->name('password.email');
+Route::post('reset-password', [AuthController::class, 'resetPassword'])->name('password.reset');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/logout', [AuthController::class, 'logout']);
