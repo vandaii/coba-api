@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\GRPOResource;
 use App\Models\GRPO;
 use App\Models\Item;
 use Illuminate\Http\Request;
 use App\Models\PurchaseOrder;
 use Illuminate\Support\Facades\DB;
+use App\Http\Resources\GRPOResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Resources\PurchaseOrderResource;
 
 class GRPOController extends Controller
 {
@@ -53,12 +54,14 @@ class GRPOController extends Controller
     public function filterShipping()
     {
         try {
-            $shippingPOs = PurchaseOrder::where('status', 'shipping')
+            // Ambil semua PO yang status shipping, beserta relasi GRPO dan items jika perlu
+            $shippingPOs = PurchaseOrder::with(['GRPOs.items'])
+                ->where('status', 'shipping')
                 ->get();
 
             return response()->json([
                 'status' => 'success',
-                'data' => $shippingPOs
+                'data' => PurchaseOrderResource::collection($shippingPOs)
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -70,28 +73,32 @@ class GRPOController extends Controller
 
     public function showShipping($id)
     {
-        $shipping = PurchaseOrder::where('status', 'shipping')->findOrFail($id);
+        // Ambil GRPO berdasarkan PO shipping tertentu
+        $grpo = GRPO::with(['items', 'purchaseOrder'])
+            ->whereHas('purchaseOrder', function ($q) {
+                $q->where('status', 'shipping');
+            })
+            ->findOrFail($id);
+
         return response()->json([
-            'data' => $shipping
+            'data' => new GRPOResource($grpo)
         ]);
     }
 
     public function filterReceived()
     {
         try {
-            $receivedGRPOs = GRPO::with(['purchaseOrder' => function ($query) {
+            $grpos = GRPO::with(['items', 'purchaseOrder' => function ($query) {
                 $query->where('status', 'received');
             }])
                 ->whereHas('purchaseOrder', function ($query) {
                     $query->where('status', 'received');
                 })
-                ->select('g_r_p_o_s.*', 'purchase_order_date')
-                ->join('purchase_orders', 'g_r_p_o_s.no_po', '=', 'purchase_orders.no_purchase_order')
                 ->get();
 
             return response()->json([
                 'status' => 'success',
-                'data' => $receivedGRPOs,
+                'data' => GRPOResource::collection($grpos)
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -103,12 +110,12 @@ class GRPOController extends Controller
 
     public function showReceived($id)
     {
-        $receivedGRPO = GRPO::with(['purchaseOrder' => function ($query) {
+        $grpo = GRPO::with(['items', 'purchaseOrder' => function ($query) {
             $query->where('status', 'received');
         }])->findOrFail($id);
 
         return response()->json([
-            'data' => $receivedGRPO
+            'data' => new GRPOResource($grpo)
         ]);
     }
 
