@@ -14,6 +14,11 @@ class PurchaseOrderResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'purchaseOrderNumber' => $this->no_purchase_order,
+            'purchaseOrderDate' => $this->purchase_order_date,
+            'supplier' => $this->supplier,
+            'status' => $this->status,
+        ];
     }
 }
