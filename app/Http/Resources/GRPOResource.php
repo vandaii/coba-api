@@ -26,6 +26,7 @@ class GRPOResource extends JsonResource
             'packingSlip' => $this->packing_slip ? url('storage/' . $this->packing_slip) : null,
             'notes' => $this->notes,
             'purchaseOrderStatus' => $this->purchaseOrder ? $this->purchaseOrder->status : null,
+            'PurchaseOrderDate' => $this->purchaseOrder ? $this->purchaseOrder->purchase_order_date : null,
         ];
     }
 }
