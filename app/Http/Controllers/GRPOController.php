@@ -40,7 +40,7 @@ class GRPOController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'data' => $grpos
+                'data' => GRPOResource::collection($grpos),
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -68,6 +68,14 @@ class GRPOController extends Controller
         }
     }
 
+    public function showShipping($id)
+    {
+        $shipping = PurchaseOrder::where('status', 'shipping')->findOrFail($id);
+        return response()->json([
+            'data' => $shipping
+        ]);
+    }
+
     public function filterReceived()
     {
         try {
@@ -93,6 +101,17 @@ class GRPOController extends Controller
         }
     }
 
+    public function showReceived($id)
+    {
+        $receivedGRPO = GRPO::with(['purchaseOrder' => function ($query) {
+            $query->where('status', 'received');
+        }])->findOrFail($id);
+
+        return response()->json([
+            'data' => $receivedGRPO
+        ]);
+    }
+
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -100,7 +119,8 @@ class GRPOController extends Controller
             'receive_date' => 'required|date',
             'expense_type' => 'required',
             'shipper_name' => 'required|string',
-            'packing_slip' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'packing_slip' => 'nullable|array|max:5',
+            'packing_slip.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg|max:5012',
             'notes' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.item_code' => 'required',
@@ -119,9 +139,11 @@ class GRPOController extends Controller
 
         DB::beginTransaction();
         try {
-            $packingSlip = null;
-            if ($request->hasFile('packing_slip')) {
-                $packingSlip = $request->file('packing_slip')->store('packing_slips', 'public');
+            $packingSlipPaths = [];
+            foreach ($request->file('packing_slip') as $file) {
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $path = $file->storeAs('packing_slips', $filename, 'public');
+                $packingSlipPaths[] = $path;
             }
 
             // Get Purchase Order
@@ -139,7 +161,7 @@ class GRPOController extends Controller
                 'receive_name' => Auth::check() && Auth::user() ? Auth::user()->name : null,
                 'supplier' => $purchaseOrder->supplier,
                 'shipper_name' => $request->shipper_name,
-                'packing_slip' => $packingSlip,
+                'packing_slip' => $packingSlipPaths,
                 'notes' => $request->notes
             ]);
 

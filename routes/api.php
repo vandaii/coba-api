@@ -46,7 +46,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [GRPOController::class, 'index']);
         Route::get('/search', [GRPOController::class, 'search']);
         Route::get('/filter/shipping', [GRPOController::class, 'filterShipping']);
+        Route::get('/filter/shipping/{id}', [GRPOController::class, 'showShipping']);
         Route::get('/filter/received', [GRPOController::class, 'filterReceived']);
+        Route::get('/filter/received/{id}', [GRPOController::class, 'showreceived']);
         Route::post('/add', [GRPOController::class, 'store']);
     });
 });
