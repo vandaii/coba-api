@@ -21,7 +21,7 @@ class GRPOController extends Controller
     public function search(Request $request)
     {
         try {
-            $query = GRPO::query();
+            $query = GRPO::with(['items', 'purchaseOrder']);
 
             // Search by no_grpo
             if ($request->has('search')) {
@@ -140,10 +140,12 @@ class GRPOController extends Controller
         DB::beginTransaction();
         try {
             $packingSlipPaths = [];
-            foreach ($request->file('packing_slip') as $file) {
-                $filename = time() . '_' . $file->getClientOriginalName();
-                $path = $file->storeAs('packing_slips', $filename, 'public');
-                $packingSlipPaths[] = $path;
+            if ($request->hasFile('packing_slip')) {
+                foreach ($request->file('packing_slip') as $file) {
+                    $filename = time() . '_' . $file->getClientOriginalName();
+                    $path = $file->storeAs('packing_slips', $filename, 'public');
+                    $packingSlipPaths[] = $path;
+                }
             }
 
             // Get Purchase Order
@@ -161,7 +163,7 @@ class GRPOController extends Controller
                 'receive_name' => Auth::check() && Auth::user() ? Auth::user()->name : null,
                 'supplier' => $purchaseOrder->supplier,
                 'shipper_name' => $request->shipper_name,
-                'packing_slip' => $packingSlipPaths,
+                'packing_slip' => json_encode($packingSlipPaths),
                 'notes' => $request->notes
             ]);
 

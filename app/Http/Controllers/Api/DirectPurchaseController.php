@@ -73,7 +73,8 @@ class DirectPurchaseController extends Controller
             'items.*.item_description' => 'required|string',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.price' => 'required|numeric|min:0',
-            'purchase_proof' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'purchase_proof' => 'nullable|array|max:5',
+            'purchase_proof.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:5012',
             'note' => 'string|nullable',
         ]);
 
@@ -85,9 +86,13 @@ class DirectPurchaseController extends Controller
         DB::beginTransaction();
         try {
 
-            $purchaseProof = null;
+            $purchaseProofPaths = [];
             if ($request->hasFile('purchase_proof')) {
-                $purchaseProof = $request->file('purchase_proof')->store('purchase_proofs', 'public');
+                foreach ($request->file('purchase_proof') as $file) {
+                    $filename = time() . '_' . $file->getClientOriginalName();
+                    $path = $file->storeAs('purchase_proofs', $filename, 'public');
+                    $purchaseProofPaths[] = $path;
+                }
             }
             //Membuat data Direct Purchase
             $directPurchase = DirectPurchase::create([
@@ -95,7 +100,7 @@ class DirectPurchaseController extends Controller
                 'supplier' => $request->supplier,
                 'expense_type' => $request->expense_type ?? 'Inventory',
                 'total_amount' => $request->total_amount,
-                'purchase_proof' => $purchaseProof,
+                'purchase_proof' => json_encode($purchaseProofPaths),
                 'note' => $request->note,
                 'status' => $request->status ?? 'Pending Area Manager',
                 'approve_area_manager' => $request->approve_area_manager ?? false,
