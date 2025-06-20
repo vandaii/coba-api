@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class PurchaseOrder extends Model
 {
@@ -16,6 +18,11 @@ class PurchaseOrder extends Model
         'supplier',
         'status'
     ];
+
+    public function GRPOs(): HasOne
+    {
+        return $this->hasOne(GRPO::class, 'no_po');
+    }
 
     protected static function boot()
     {
