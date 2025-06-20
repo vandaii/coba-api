@@ -54,14 +54,12 @@ class GRPOController extends Controller
     public function filterShipping()
     {
         try {
-            // Ambil semua PO yang status shipping, beserta relasi GRPO dan items jika perlu
-            $shippingPOs = PurchaseOrder::with(['GRPOs.items'])
-                ->where('status', 'shipping')
+            $shippingPOs = PurchaseOrder::where('status', 'shipping')
                 ->get();
 
             return response()->json([
                 'status' => 'success',
-                'data' => PurchaseOrderResource::collection($shippingPOs)
+                'data' => $shippingPOs
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -74,14 +72,10 @@ class GRPOController extends Controller
     public function showShipping($id)
     {
         // Ambil GRPO berdasarkan PO shipping tertentu
-        $grpo = GRPO::with(['items', 'purchaseOrder'])
-            ->whereHas('purchaseOrder', function ($q) {
-                $q->where('status', 'shipping');
-            })
-            ->findOrFail($id);
+        $shippingPOs = PurchaseOrder::where('status', 'shipping')->findOrFail($id);
 
         return response()->json([
-            'data' => new GRPOResource($grpo)
+            'data' => $shippingPOs
         ]);
     }
 
