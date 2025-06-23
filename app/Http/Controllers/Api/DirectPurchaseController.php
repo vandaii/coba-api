@@ -148,12 +148,38 @@ class DirectPurchaseController extends Controller
         return new DirectPurchaseResource($directPurchase);
     }
 
-    public function approveAreaManager(Request $request, $id)
+    public function destroy(Request $request, $id)
     {
         $directPurchase = DirectPurchase::with('items')->findOrFail($id);
 
+        if ($directPurchase->approve_area_manager == true) {
+            return response()->json([
+                'message' => 'Direct Purchase has been approved by Area Manager'
+            ], 409);
+        }
+
+        $directPurchase->delete();
+        return response()->json([
+            'message' => 'Delete successfully'
+        ]);
+    }
+
+    public function approveAreaManager(Request $request, $id)
+    {
+
+        $user = $request->user();
+
+        if ($user->role !== 'Area Manager') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized. Only Accounting can approve.'
+            ], 403);
+        }
+
+        $directPurchase = DirectPurchase::with('items')->findOrFail($id);
+
         $directPurchase->update([
-            'approve_area_manager' => $request->approve_area_manager ?? true,
+            'approve_area_manager' => $request->approve_area_manager,
         ]);
 
         if ($directPurchase->approve_area_manager === true) {
@@ -171,14 +197,14 @@ class DirectPurchaseController extends Controller
     public function approveAccounting(Request $request, $id)
     {
         try {
-            // $user = $request->user();
+            $user = $request->user();
 
-            // if ($user->role !== 'Accounting') {
-            //     return response()->json([
-            //         'status' => false,
-            //         'message' => 'Unauthorized. Only Accounting can approve.'
-            //     ], 403);
-            // }
+            if ($user->role !== 'Accounting') {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Unauthorized. Only Accounting can approve.'
+                ], 403);
+            }
 
             $directPurchase = DirectPurchase::findOrFail($id);
 
