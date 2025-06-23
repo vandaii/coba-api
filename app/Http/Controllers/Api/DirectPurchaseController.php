@@ -173,21 +173,16 @@ class DirectPurchaseController extends Controller
         if ($user->role !== 'Area Manager') {
             return response()->json([
                 'status' => false,
-                'message' => 'Unauthorized. Only Accounting can approve.'
+                'message' => 'Unauthorized. Only Area Manager can approve.'
             ], 403);
         }
 
-        $directPurchase = DirectPurchase::with('items')->findOrFail($id);
+        $directPurchase = DirectPurchase::findOrFail($id);
 
         $directPurchase->update([
-            'approve_area_manager' => $request->approve_area_manager,
+            'status' => 'Approved Area Manager',
+            'approve_area_manager' => true,
         ]);
-
-        if ($directPurchase->approve_area_manager === true) {
-            $directPurchase->update([
-                'status' => 'Approve Area Manager'
-            ]);
-        }
 
         return response()->json([
             'Message' => 'Area Manager Approved',
