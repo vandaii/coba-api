@@ -29,7 +29,8 @@ class DirectPurchaseController extends Controller
 
             // Filter by status
             if ($request->has('status')) {
-                $query->where('status', $request->status);
+                $statuses = explode(',', $request->status);
+                $query->whereIn('status', $statuses);
             }
 
             // Filter berdasarkan tanggal
