@@ -20,7 +20,7 @@ class DirectPurchaseItemResource extends JsonResource
             'itemDescription' => $this->item_description,
             'quantity' => $this->quantity,
             'price' => $this->price,
-            'totalPrice' => $this->subtotal,
+            'totalPrice' => $this->total_price,
         ];
     }
 }
