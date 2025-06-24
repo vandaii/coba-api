@@ -16,4 +16,9 @@ class StoreLocation extends Model
     {
         return $this->hasMany(User::class);
     }
+
+    public function transferOuts(): HasMany
+    {
+        return $this->hasMany(TransferOut::class);
+    }
 }
