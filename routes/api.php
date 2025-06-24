@@ -59,5 +59,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('transfer-out')->group(function () {
         Route::get('/', [TransferOutController::class, 'index']);
         Route::post('/add', [TransferOutController::class, 'store']);
+        Route::get('/{id}', [TransferOutController::class, 'show']);
     });
 });

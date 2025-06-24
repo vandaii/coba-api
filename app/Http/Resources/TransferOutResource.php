@@ -15,9 +15,15 @@ class TransferOutResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'id' => $this->id,
             'transferOutNumber' => $this->transfer_out_number,
             'transferOutDate' => $this->transfer_out_date,
-            'sourceLocation' => StoreLocationResource::where('store_name', $this->storeLocation)
+            'sourceLocation' => new StoreLocationResource($this->whenLoaded('sourceLocations')),
+            'destinationLocation' => new StoreLocationResource($this->whenLoaded('destinationLocations')),
+            'items' => TransferItemResource::collection($this->items),
+            'deliveryNote' => $this->delivery_note,
+            'notes' => $this->notes,
+            'status' => $this->status
         ];
     }
 }

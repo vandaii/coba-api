@@ -18,9 +18,14 @@ class TransferOut extends Model
         'status'
     ];
 
-    public function storeLocations(): BelongsTo
+    public function sourceLocations(): BelongsTo
     {
-        return $this->belongsTo(StoreLocation::class);
+        return $this->belongsTo(StoreLocation::class, 'source_location_id');
+    }
+
+    public function destinationLocations(): BelongsTo
+    {
+        return $this->belongsTo(StoreLocation::class, 'destination_location_id');
     }
 
     public function items(): HasMany

@@ -14,7 +14,8 @@ class TransferOutController extends Controller
 {
     public function index()
     {
-        return TransferOutResource::collection(TransferOut::all());
+        $transferOuts = TransferOut::with(['sourceLocations', 'destinationLocations'])->get();
+        return TransferOutResource::collection($transferOuts);
     }
 
     public function store(Request $request)
@@ -71,7 +72,7 @@ class TransferOutController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Transfer out created successfully',
-                'data' => $transferOut,
+                'data' => new TransferOutResource($transferOut->load(['sourceLocations', 'destinationLocations'])),
             ], 201);
         } catch (\Exception $e) {
             //Mengeluarkan data ketika gagal
@@ -81,5 +82,11 @@ class TransferOutController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function show($id)
+    {
+        $transferOuts = TransferOut::with(['sourceLocations', 'destinationLocations'])->findOrFail($id);
+        return new TransferOutResource($transferOuts);
     }
 }

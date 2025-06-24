@@ -14,14 +14,14 @@ class StoreLocationSeeder extends Seeder
     public function run(): void
     {
         DB::table('store_locations')->insert([
-            'store_name' => 'HAUS Jakarta',
-            'address' => 'jakarta'
-        ], [
-            'store_name' => 'HAUS Tangerang',
-            'address' => 'Tangerang'
-        ], [
-            'store_name' => 'HAUS Cibubur',
-            'address' => 'Cibubur'
+            [
+                'store_name' => 'HAUS Tangerang',
+                'address' => 'Tangerang'
+            ],
+            [
+                'store_name' => 'HAUS Cibubur',
+                'address' => 'Cibubur'
+            ]
         ]);
     }
 }
