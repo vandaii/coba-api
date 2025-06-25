@@ -22,8 +22,8 @@ return new class extends Migration
             $table->string('status')->default('Pending');
             $table->timestamps();
 
-            $table->foreign('source_location_id')->references('id')->on('store_locations')->onDelete('cascade');
-            $table->foreign('destination_location_id')->references('id')->on('store_locations')->onDelete('cascade');
+            $table->foreign('source_location_id')->references('id')->on('store_locations');
+            $table->foreign('destination_location_id')->references('id')->on('store_locations');
         });
     }
 
