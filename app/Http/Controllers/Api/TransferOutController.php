@@ -61,7 +61,6 @@ class TransferOutController extends Controller
             foreach ($request->items as $item) {
                 $transferOut->items()->create([
                     'item_name' => $item['item_name'],
-                    'item_description' => $item['item_description'],
                     'quantity' => $item['quantity'],
                     'unit' => $item['unit'],
                     'transfer_out_number' => $transferOut->transfer_out_number

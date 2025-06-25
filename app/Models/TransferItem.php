@@ -9,7 +9,6 @@ class TransferItem extends Model
 {
     protected $fillable = [
         'item_name',
-        'item_description',
         'quantity',
         'unit',
         'transfer_out_number'

@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('transfer_items', function (Blueprint $table) {
             $table->id();
             $table->string('item_name');
-            $table->string('item_description');
             $table->decimal('quantity');
             $table->string('unit');
             $table->timestamps();

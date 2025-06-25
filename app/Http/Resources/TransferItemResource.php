@@ -18,7 +18,6 @@ class TransferItemResource extends JsonResource
             'id' => $this->id,
             'transferOutNumber' => $this->transfer_out_number,
             'itemName' => $this->item_name,
-            'itemDescription' => $this->item_description,
             'quantity' => $this->quantity,
             'unit' => $this->unit
         ];
