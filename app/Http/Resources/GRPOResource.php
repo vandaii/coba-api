@@ -17,6 +17,7 @@ class GRPOResource extends JsonResource
         return [
             'noGRPO' => $this->no_grpo,
             'noPO' => $this->no_po,
+            'PurchaseOrderDate' => $this->purchase_order_date,
             'receiveDate' => $this->receive_date,
             'expenseType' => $this->expense_type,
             'shipperName' => $this->shipper_name,
@@ -25,8 +26,7 @@ class GRPOResource extends JsonResource
             'items' => ItemResource::collection($this->items),
             'packingSlip' => $this->packing_slip ? url('storage/' . $this->packing_slip) : null,
             'notes' => $this->notes,
-            'purchaseOrderStatus' => $this->purchaseOrder ? $this->purchaseOrder->status : null,
-            'PurchaseOrderDate' => $this->purchaseOrder ? $this->purchaseOrder->purchase_order_date : null,
+            'status' => $this->status,
         ];
     }
 }

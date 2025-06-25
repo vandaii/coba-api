@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('no_grpo')->unique();
             $table->string('no_po');
+            $table->date('purchase_order_date');
             $table->date('receive_date');
             $table->string('expense_type')->default('Inventory');
             $table->string('shipper_name');
@@ -22,6 +23,7 @@ return new class extends Migration
             $table->string('supplier');
             $table->string('packing_slip')->nullable();
             $table->text('notes');
+            $table->string('status');
             $table->timestamps();
 
             $table->foreign('no_po')->references('no_purchase_order')->on('purchase_orders')->onDelete('cascade');

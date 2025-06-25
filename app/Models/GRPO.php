@@ -11,13 +11,15 @@ class GRPO extends Model
     protected $fillable = [
         'no_grpo',
         'no_po',
+        'purchase_order_date',
         'receive_date',
         'expense_type',
         'shipper_name',
         'receive_name',
         'supplier',
         'packing_slip',
-        'notes'
+        'notes',
+        'status'
     ];
 
     public function purchaseOrder()

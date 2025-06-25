@@ -51,7 +51,7 @@ class GRPOController extends Controller
         }
     }
 
-    public function filterShipping()
+    public function shipping()
     {
         try {
             $shippingPOs = PurchaseOrder::where('status', 'shipping')
@@ -59,7 +59,7 @@ class GRPOController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'data' => $shippingPOs
+                'data' => PurchaseOrderResource::collection($shippingPOs)
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -75,41 +75,7 @@ class GRPOController extends Controller
         $shippingPOs = PurchaseOrder::where('status', 'shipping')->findOrFail($id);
 
         return response()->json([
-            'data' => $shippingPOs
-        ]);
-    }
-
-    public function filterReceived()
-    {
-        try {
-            $grpos = GRPO::with(['items', 'purchaseOrder' => function ($query) {
-                $query->where('status', 'received');
-            }])
-                ->whereHas('purchaseOrder', function ($query) {
-                    $query->where('status', 'received');
-                })
-                ->get();
-
-            return response()->json([
-                'status' => 'success',
-                'data' => GRPOResource::collection($grpos)
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function showReceived($id)
-    {
-        $grpo = GRPO::with(['items', 'purchaseOrder' => function ($query) {
-            $query->where('status', 'received');
-        }])->findOrFail($id);
-
-        return response()->json([
-            'data' => new GRPOResource($grpo)
+            'data' => new PurchaseOrderResource($shippingPOs)
         ]);
     }
 
@@ -159,11 +125,13 @@ class GRPOController extends Controller
             $grpo = GRPO::create([
                 'no_grpo' => 'GR-' . (strlen($request->no_po) > 3 ? substr($request->no_po, 3) : $request->no_po),
                 'no_po' => $request->no_po,
+                'purchase_order_date' => $purchaseOrder->purchase_order_date,
                 'receive_date' => $request->receive_date,
                 'expense_type' => $request->expense_type,
                 'receive_name' => Auth::check() && Auth::user() ? Auth::user()->name : null,
                 'supplier' => $purchaseOrder->supplier,
                 'shipper_name' => $request->shipper_name,
+                'status' => $request->status ?? 'Received',
                 'packing_slip' => json_encode($packingSlipPaths),
                 'notes' => $request->notes
             ]);
@@ -185,11 +153,9 @@ class GRPOController extends Controller
                 ]);
             }
 
-
-            // Update PO status
-            $purchaseOrder->update(['status' => 'Received']);
-
             DB::commit();
+
+            $purchaseOrder->delete();
 
             return response()->json([
                 'status' => true,
@@ -204,5 +170,11 @@ class GRPOController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function show($id)
+    {
+        $grpo = GRPO::with('items')->findOrFail($id);
+        return new GRPOResource($grpo);
     }
 }
