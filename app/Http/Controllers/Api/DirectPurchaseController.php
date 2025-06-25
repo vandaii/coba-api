@@ -74,6 +74,7 @@ class DirectPurchaseController extends Controller
             'items.*.item_description' => 'required|string',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.price' => 'required|numeric|min:0',
+            'items.*.unit' => 'required|string',
             'purchase_proof' => 'nullable|array|max:5',
             'purchase_proof.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:5012',
             'note' => 'string|nullable',
@@ -118,7 +119,8 @@ class DirectPurchaseController extends Controller
                     'item_description' => $item['item_description'],
                     'quantity' => $item['quantity'],
                     'price' => $item['price'],
-                    'total_price' => $total_price
+                    'unit' => $item['unit'],
+                    'total_price' => $total_price,
                 ]);
                 //Menghitung total harga keseluruhan
                 $totalAmount += $total_price;

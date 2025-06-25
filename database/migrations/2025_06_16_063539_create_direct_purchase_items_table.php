@@ -19,6 +19,7 @@ return new class extends Migration
             $table->integer('quantity');
             $table->decimal('price', 20, 2);
             $table->decimal('total_price', 20, 2);
+            $table->string('unit')->default('PCS');
             $table->timestamps();
         });
     }

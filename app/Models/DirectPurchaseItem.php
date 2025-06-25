@@ -12,7 +12,8 @@ class DirectPurchaseItem extends Model
         'item_description',
         'quantity',
         'price',
-        'total_price'
+        'total_price',
+        'unit'
     ];
 
     public function directPurchase()
