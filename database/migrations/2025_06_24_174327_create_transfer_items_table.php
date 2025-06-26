@@ -19,7 +19,9 @@ return new class extends Migration
             $table->timestamps();
 
             $table->string('transfer_out_number');
-            $table->foreign('transfer_out_number')->references('transfer_out_number')->on('transfer_outs')->onDelete('cascade');
+            $table->string('transfer_in_number')->nullable();
+            $table->foreign('transfer_out_number')->references('transfer_out_number')->on('transfer_outs');
+            $table->foreign('transfer_in_number')->references('transfer_in_number')->on('transfer_ins');
         });
     }
 

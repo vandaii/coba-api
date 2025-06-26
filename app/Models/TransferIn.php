@@ -26,6 +26,16 @@ class TransferIn extends Model
         return $this->belongsTo(TransferOut::class, 'transfer_out_number', 'transfer_out_number');
     }
 
+    public function sourceLocations(): BelongsTo
+    {
+        return $this->belongsTo(StoreLocation::class, 'source_location_id');
+    }
+
+    public function destinationLocations(): BelongsTo
+    {
+        return $this->belongsTo(StoreLocation::class, 'destination_location_id');
+    }
+
     public function items(): HasMany
     {
         return $this->hasMany(TransferItem::class, 'transfer_in_number', 'transfer_in_number');

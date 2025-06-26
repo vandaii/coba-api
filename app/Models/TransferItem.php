@@ -11,7 +11,8 @@ class TransferItem extends Model
         'item_name',
         'quantity',
         'unit',
-        'transfer_out_number'
+        'transfer_out_number',
+        'transfer_in_number'
     ];
 
     public function transferOuts(): BelongsTo
