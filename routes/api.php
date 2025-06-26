@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PersonController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\Api\DirectPurchaseController;
+use App\Http\Controllers\Api\TransferInController;
+use App\Http\Controllers\Api\TransferOutController;
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
@@ -52,5 +54,17 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/search', [GRPOController::class, 'search']);
         Route::get('/shipping', [GRPOController::class, 'shipping']);
         Route::get('/shipping/{id}', [GRPOController::class, 'showShipping']);
+    });
+
+    Route::prefix('transfer-out')->group(function () {
+        Route::get('/', [TransferOutController::class, 'index']);
+        Route::post('/add', [TransferOutController::class, 'store']);
+        Route::get('/{id}', [TransferOutController::class, 'show']);
+    });
+
+    Route::prefix('transfer-in')->group(function () {
+        Route::get('/', [TransferInController::class, 'index']);
+        Route::post('/add', [TransferInController::class, 'store']);
+        Route::get('/{id}', [TransferInController::class, 'show']);
     });
 });

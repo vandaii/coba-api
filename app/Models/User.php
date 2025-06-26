@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -25,7 +26,7 @@ class User extends Authenticatable
         'password',
         'phone',
         'role',
-        'store_location',
+        'store_location_id',
         'photo_profile',
     ];
 
@@ -50,6 +51,11 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function storeLocations(): BelongsTo
+    {
+        return $this->belongsTo(StoreLocation::class, 'store_location_id');
     }
 
     // protected static function boot()

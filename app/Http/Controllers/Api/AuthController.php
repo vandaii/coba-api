@@ -26,7 +26,7 @@ class AuthController extends Controller
             'email' => 'required|string|email|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'phone' => 'required|string|max:20',
-            'store_location' => 'nullable|string|max:255',
+            'store_location_id' => 'required',
             'photo_profile' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
@@ -43,7 +43,7 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'phone' => $request->phone,
-            'store_location' => $request->store_location,
+            'store_location_id' => $request->store_location_id,
             'photo_profile' => $request->file('photo_profile')?->store('photos', 'public'),
             'role' => $request->role ?? 'User Outlet'
         ]);
