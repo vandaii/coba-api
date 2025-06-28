@@ -16,10 +16,13 @@ return new class extends Migration
             $table->string('item_code')->unique();
             $table->string('item_name');
             $table->string('quantity');
-            $table->string('unit');
-            $table->string('no_grpo');
+            $table->string('unit'); //pcs, box, kg
+            $table->string('UoM'); //gram dll
+            $table->string('no_grpo')->nullable();
+            $table->string('stock_opname_number')->nullable();
 
-            $table->foreign('no_grpo')->references('no_grpo')->on('g_r_p_o_s')->onDelete('cascade');
+            $table->foreign('no_grpo')->references('no_grpo')->on('g_r_p_o_s');
+            $table->foreign('stock_opname_number')->references('stock_opname_number')->on('stock_opnames');
             $table->timestamps();
         });
     }

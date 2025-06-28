@@ -20,12 +20,12 @@ return new class extends Migration
             $table->string('phone');
             $table->unsignedBigInteger('store_location_id')->nullable();
             $table->string('photo_profile')->nullable();
-            $table->string('role')->default('User Outlet');
+            $table->string('role')->default('User Outlet'); //super admin, admin, area manager, accounting, user outlet, supply change management
             $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
 
-            // $table->foreign('store_location_id')->references('id')->on('store_locations')->onDelete('cascade');
+            $table->foreign('store_location_id')->references('id')->on('store_locations')->onDelete('cascade');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
