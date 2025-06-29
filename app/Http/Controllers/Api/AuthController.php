@@ -26,7 +26,6 @@ class AuthController extends Controller
             'email' => 'required|string|email|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'phone' => 'required|string|max:20',
-            'store_location_id' => 'required',
             'photo_profile' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 

@@ -12,6 +12,7 @@ class Item extends Model
         'item_name',
         'quantity',
         'unit',
+        'UoM',
         'no_grpo',
         'stock_opname_number'
     ];

@@ -15,11 +15,11 @@ class ItemResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'noGRPO' => $this->no_grpo,
             'itemCode' => $this->item_code,
             'itemName' => $this->item_name,
             'quantity' => $this->quantity,
             'unit' => $this->unit,
+            'UoM' => $this->UoM
         ];
     }
 }

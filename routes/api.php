@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PersonController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\Api\DirectPurchaseController;
+use App\Http\Controllers\Api\StockOpnameController;
 use App\Http\Controllers\Api\TransferInController;
 use App\Http\Controllers\Api\TransferOutController;
 
@@ -50,9 +51,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('grpo')->group(function () {
         Route::get('/', [GRPOController::class, 'index']);
         Route::post('/add', [GRPOController::class, 'store']);
-        Route::get('/{id}', [GRPOController::class, 'show']);
         Route::get('/search', [GRPOController::class, 'search']);
         Route::get('/shipping', [GRPOController::class, 'shipping']);
+        Route::get('/{id}', [GRPOController::class, 'show']);
         Route::get('/shipping/{id}', [GRPOController::class, 'showShipping']);
     });
 
@@ -66,5 +67,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [TransferInController::class, 'index']);
         Route::post('/add', [TransferInController::class, 'store']);
         Route::get('/{id}', [TransferInController::class, 'show']);
+    });
+
+    Route::prefix('stock-opname')->group(function () {
+        Route::get('/', [StockOpnameController::class, 'index']);
+        Route::post('/add', [StockOpnameController::class, 'store']);
+        Route::get('/{id}', [StockOpnameController::class, 'show']);
     });
 });

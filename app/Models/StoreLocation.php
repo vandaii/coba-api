@@ -26,4 +26,9 @@ class StoreLocation extends Model
     {
         return $this->hasMany(TransferIn::class);
     }
+
+    public function stockOpnames(): HasMany
+    {
+        return $this->hasMany(StockOpname::class);
+    }
 }
