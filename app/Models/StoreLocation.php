@@ -31,4 +31,9 @@ class StoreLocation extends Model
     {
         return $this->hasMany(StockOpname::class);
     }
+
+    public function materialRequests(): HasMany
+    {
+        return $this->hasMany(MaterialRequest::class);
+    }
 }

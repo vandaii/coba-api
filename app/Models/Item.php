@@ -14,7 +14,8 @@ class Item extends Model
         'unit',
         'UoM',
         'no_grpo',
-        'stock_opname_number'
+        'stock_opname_number',
+        'request_number'
     ];
 
     public function GRPOs(): BelongsTo
@@ -25,5 +26,10 @@ class Item extends Model
     public function stockOpnames(): BelongsTo
     {
         return $this->belongsTo(StockOpname::class, 'stock_opname_number', 'stock_opname_number');
+    }
+
+    public function materialRequests(): BelongsTo
+    {
+        return $this->belongsTo(MaterialRequest::class, 'request_number', 'request_number');
     }
 }
