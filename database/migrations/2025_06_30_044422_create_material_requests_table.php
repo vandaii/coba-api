@@ -17,9 +17,12 @@ return new class extends Migration
             $table->date('request_date');
             $table->date('due_date');
             $table->text('reason')->nullable();
+            $table->string('status')->default('Pending'); //Pending, Approve Accounting, Approve Area manager
+            $table->boolean('approve_area_manager')->default(false);
+            $table->boolean('approve_accounting')->default(false);
             $table->timestamps();
 
-            $table->unsignedInteger('store_location');
+            $table->unsignedBigInteger('store_location');
             $table->foreign('store_location')->references('id')->on('store_locations');
         });
     }

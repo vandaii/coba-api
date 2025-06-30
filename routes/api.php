@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PersonController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\Api\DirectPurchaseController;
+use App\Http\Controllers\Api\MaterialRequestController;
 use App\Http\Controllers\Api\StockOpnameController;
 use App\Http\Controllers\Api\TransferInController;
 use App\Http\Controllers\Api\TransferOutController;
@@ -74,5 +75,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [StockOpnameController::class, 'index']);
         Route::post('/add', [StockOpnameController::class, 'store']);
         Route::get('/{id}', [StockOpnameController::class, 'show']);
+    });
+
+    Route::prefix('material-request')->group(function () {
+        Route::get('/', [MaterialRequestController::class, 'index']);
+        Route::post('/add', [MaterialRequestController::class, 'store']);
+        Route::get('/{id}', [MaterialRequestController::class, 'show']);
+        Route::post('/{id}/approve-area-manager', [MaterialRequestController::class, 'approveAreaManager']);
+        Route::post('/{id}/approve-accounting', [MaterialRequestController::class, 'approveAccounting']);
     });
 });

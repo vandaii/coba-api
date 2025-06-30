@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('receive_name');
             $table->string('supplier');
             $table->string('packing_slip')->nullable();
-            $table->text('notes');
+            $table->text('notes')->nullable();
             $table->string('status');
             $table->timestamps();
 

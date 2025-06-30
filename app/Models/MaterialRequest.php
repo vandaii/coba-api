@@ -13,7 +13,10 @@ class MaterialRequest extends Model
         'request_date',
         'due_date',
         'reason',
-        'store_location'
+        'store_location',
+        'status',
+        'approve_area_manager',
+        'approve_accounting'
     ];
 
     public function storeLocation(): BelongsTo
@@ -45,7 +48,7 @@ class MaterialRequest extends Model
                 $nextNumber = 1;
             }
 
-            $model->stock_opname_number = $prefix . $date . sprintf('%04d', $nextNumber);
+            $model->request_number = $prefix . $date . '-' . sprintf('%04d', $nextNumber);
         });
     }
 }
