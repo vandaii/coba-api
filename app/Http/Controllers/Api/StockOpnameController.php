@@ -12,9 +12,58 @@ use Illuminate\Support\Facades\Validator;
 
 class StockOpnameController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return StockOpnameResource::collection(StockOpname::with('items')->get());
+        try {
+            $query = StockOpname::with(['items', 'storeLocation']);
+
+            // Search
+            if ($request->has('search')) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('stock_opname_number', 'like', "%{$search}%")
+                        ->orWhere('stock_opname_date', 'like', "%{$search}%")
+                        ->orWhere('counted_by', 'like', "%{$search}%")
+                        ->orWhereHas('storeLocation', function ($q2) use ($search) {
+                            $q2->where('store_name', 'like', "%{$search}%")
+                                ->orWhere('address', 'like', "%{$search}%");
+                        });
+                });
+            }
+
+            // Filter by status
+            if ($request->has('status')) {
+                $statuses = explode(',', $request->status);
+                $query->whereIn('status', $statuses);
+            }
+
+            // Filter berdasarkan tanggal
+            if ($request->has('start_date') && $request->has('end_date')) {
+                $query->whereBetween('created_at', [
+                    $request->start_date . ' 00:00:00',
+                    $request->end_date . ' 23:59:59'
+                ]);
+            }
+
+            // Sort by latest by default
+            $stockOpnames = $query->latest()->paginate(10);
+
+            return response()->json([
+                'message' => 'Stock opname retrieved successfully',
+                'data' => StockOpnameResource::collection($stockOpnames->load('storeLocation')),
+                'meta' => [
+                    'current_page' => $stockOpnames->currentPage(),
+                    'last_page' => $stockOpnames->lastPage(),
+                    'total_records' => $stockOpnames->total(),
+                    'per_page' => $stockOpnames->perPage()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to retrieve stock opname',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function store(Request $request)
@@ -67,7 +116,7 @@ class StockOpnameController extends Controller
             DB::commit();
             return response()->json([
                 'message' => 'Stock Opname Successfully added',
-                'data' => new StockOpnameResource($stockOpname->load('storeLocations'))
+                'data' => new StockOpnameResource($stockOpname->load('storeLocation'))
             ]);
         } catch (\Exception $e) {
             DB::rollBack();

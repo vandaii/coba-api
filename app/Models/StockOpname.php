@@ -23,7 +23,7 @@ class StockOpname extends Model
         return $this->hasMany(Item::class, 'stock_opname_number', 'stock_opname_number');
     }
 
-    public function storeLocations(): BelongsTo
+    public function storeLocation(): BelongsTo
     {
         return $this->belongsTo(StoreLocation::class, 'store_location');
     }

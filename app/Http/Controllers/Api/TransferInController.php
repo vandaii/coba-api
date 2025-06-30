@@ -7,15 +7,66 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TransferInResource;
+use App\Http\Resources\TransferOutResource;
 use App\Models\TransferOut;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 
 class TransferInController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return TransferInResource::collection(TransferIn::with(['transferOuts', 'items'])->get());
+        try {
+            $user = $request->user();
+            $query = TransferIn::with(['items', 'transferOuts'])
+                ->where('destination_location_id', $user->store_location_id);
+            // Search
+            if ($request->has('search')) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('transfer_in_number', 'like', "%{$search}%")
+                        ->orWhere('transfer_in_number', 'like', "% {$search} %")
+                        ->orWhere('transfer_out_number', 'like', "%{$search}%")
+                        ->orWhereHas('sourceLocations', function ($q2) use ($search) {
+                            $q2->where('store_name', 'like', "%{$search}%")
+                                ->orWhere('address', 'like', "%{$search}%");
+                        });
+                });
+            }
+
+            // Filter by status
+            if ($request->has('status')) {
+                $statuses = explode(',', $request->status);
+                $query->whereIn('status', $statuses);
+            }
+
+            // Filter berdasarkan tanggal
+            if ($request->has('start_date') && $request->has('end_date')) {
+                $query->whereBetween('created_at', [
+                    $request->start_date . ' 00:00:00',
+                    $request->end_date . ' 23:59:59'
+                ]);
+            }
+
+            // Sort by latest by default
+            $transferIns = $query->latest()->paginate(10);
+
+            return response()->json([
+                'message' => 'Transfer in retrieved successfully',
+                'data' => TransferInResource::collection($transferIns),
+                'meta' => [
+                    'current_page' => $transferIns->currentPage(),
+                    'last_page' => $transferIns->lastPage(),
+                    'total_records' => $transferIns->total(),
+                    'per_page' => $transferIns->perPage()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to retrieve transfer in',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function store(Request $request)
@@ -53,10 +104,18 @@ class TransferInController extends Controller
                 }
             }
 
-            // Get Transfer Out
+            // Get Transfer Out yang sesuai lokasi user
             $user = $request->user();
-            $transferOut = TransferOut::where('transfer_out_number', $request->transfer_out_number)->firstOrFail();
+            $transferOut = TransferOut::where('transfer_out_number', $request->transfer_out_number)
+                ->where('destination_location_id', $user->store_location_id)
+                ->first();
 
+            if (!$transferOut) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Transfer Out tidak ditemukan atau tidak sesuai lokasi user.'
+                ], 403);
+            }
 
             // Create a new GRPO record
             $transferIn = TransferIn::create([
@@ -82,7 +141,6 @@ class TransferInController extends Controller
                 ]);
             }
 
-
             // Update PO status
             $transferOut->update(['status' => 'Completed']);
 
@@ -91,7 +149,7 @@ class TransferInController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Transfer In created successfully',
-                'data' => $transferIn,
+                'data' => new TransferInResource($transferIn->load(['sourceLocations', 'destinationLocations']))
             ], 201);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -110,5 +168,27 @@ class TransferInController extends Controller
         return response()->json([
             'data' => new TransferInResource($transferIn)
         ]);
+    }
+
+    public function availableTransferOuts(Request $request)
+    {
+        try {
+
+            $user = $request->user();
+            $storeLocationId = $user->store_location_id;
+
+            $transferOuts = TransferOut::where('destination_location_id', $storeLocationId)
+                ->where('status', '!=', 'Completed')
+                ->get();
+
+            return response()->json([
+                'data' => TransferOutResource::collection($transferOuts->load(['sourceLocations', 'destinationLocations']))
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to retrieve transfer in',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

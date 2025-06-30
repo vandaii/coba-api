@@ -22,7 +22,7 @@ class StockOpnameResource extends JsonResource
             'inputStockDate' => $this->input_stock_date,
             'countedBy' => $this->counted_by,
             'preparedBy' => $this->prepared_by,
-            'storeLocation' => new StoreLocationResource($this->whenLoaded('storeLocations')),
+            'storeLocation' => new StoreLocationResource($this->whenLoaded('storeLocation')),
             'items' => ItemResource::collection($this->items),
             'status' => $this->status
         ];

@@ -12,10 +12,57 @@ use Illuminate\Support\Facades\Validator;
 
 class TransferOutController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $transferOuts = TransferOut::with(['sourceLocations', 'destinationLocations'])->get();
-        return TransferOutResource::collection($transferOuts);
+        try {
+            $query = TransferOut::with(['items', 'sourceLocations', 'destinationLocations']);
+
+            // Search
+            if ($request->has('search')) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('transfer_out_number', 'like', "%{$search}%")
+                        ->orWhere('transfer_out_number', 'like', "%{$search}%")
+                        ->orWhereHas('destinationLocations', function ($q2) use ($search) {
+                            $q2->where('store_name', 'like', "%{$search}%")
+                                ->orWhere('address', 'like', "%{$search}%");
+                        });
+                });
+            }
+
+            // Filter by status
+            if ($request->has('status')) {
+                $statuses = explode(',', $request->status);
+                $query->whereIn('status', $statuses);
+            }
+
+            // Filter berdasarkan tanggal
+            if ($request->has('start_date') && $request->has('end_date')) {
+                $query->whereBetween('created_at', [
+                    $request->start_date . ' 00:00:00',
+                    $request->end_date . ' 23:59:59'
+                ]);
+            }
+
+            // Sort by latest by default
+            $transferOuts = $query->latest()->paginate(10);
+
+            return response()->json([
+                'message' => 'Transfer out retrieved successfully',
+                'data' => TransferOutResource::collection($transferOuts),
+                'meta' => [
+                    'current_page' => $transferOuts->currentPage(),
+                    'last_page' => $transferOuts->lastPage(),
+                    'total_records' => $transferOuts->total(),
+                    'per_page' => $transferOuts->perPage()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to retrieve transfer out',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function store(Request $request)
