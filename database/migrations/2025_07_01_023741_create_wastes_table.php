@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('prepared_by');
             $table->boolean('approve_area_manager')->default(false);
             $table->boolean('approve_accounting')->default(false);
-            $table->string('photo')->nullable();
+            $table->string('waste_proof')->nullable();
             $table->text('remark')->nullable();
             $table->string('status')->default('Pending');
             $table->timestamps();

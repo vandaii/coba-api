@@ -97,7 +97,7 @@ class StockOpnameController extends Controller
                 'stock_opname_date' => $request->stock_opname_date,
                 'input_stock_date' => $request->input_stock_date,
                 'counted_by' => $request->counted_by,
-                'prepared_by' => Auth::check() ? Auth::user()->name : null,
+                'prepared_by' => Auth::check() && Auth::user() ? Auth::user()->name : null,
                 'store_location' => $storeLocation,
                 'status' => $request->status ?? 'On Going'
             ]);

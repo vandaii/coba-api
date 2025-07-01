@@ -82,7 +82,7 @@ class MaterialRequestController extends Controller
                 'status' => false,
                 'message' => 'Validation failed',
                 'error' => $validator->errors()
-            ]);
+            ], 422);
         }
 
         DB::beginTransaction();

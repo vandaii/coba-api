@@ -1,19 +1,19 @@
 <?php
 
 use Illuminate\Http\Request;
-use App\Models\PurchaseOrder;
 use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\GRPOController;
+use App\Http\Controllers\Api\GRPOController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PersonController;
-use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\Api\PurchaseOrderController;
 use App\Http\Controllers\Api\DirectPurchaseController;
 use App\Http\Controllers\Api\MaterialRequestController;
 use App\Http\Controllers\Api\StockOpnameController;
 use App\Http\Controllers\Api\TransferInController;
 use App\Http\Controllers\Api\TransferOutController;
+use App\Http\Controllers\Api\WasteController;
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
@@ -83,5 +83,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}', [MaterialRequestController::class, 'show']);
         Route::post('/{id}/approve-area-manager', [MaterialRequestController::class, 'approveAreaManager']);
         Route::post('/{id}/approve-accounting', [MaterialRequestController::class, 'approveAccounting']);
+    });
+
+    Route::prefix('waste')->group(function () {
+        Route::post('/add', [WasteController::class, 'store']);
     });
 });

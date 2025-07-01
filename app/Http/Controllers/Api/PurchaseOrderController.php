@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
-use App\Http\Resources\PurchaseOrderResource;
-use App\Models\PurchaseOrder;
 use Illuminate\Http\Request;
+use App\Models\PurchaseOrder;
+use App\Http\Controllers\Controller;
+use App\Http\Resources\PurchaseOrderResource;
 
 class PurchaseOrderController extends Controller
 {

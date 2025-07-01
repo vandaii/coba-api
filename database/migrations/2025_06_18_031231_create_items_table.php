@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('quantity');
             $table->string('unit')->nullable(); //pcs, box, kg
             $table->string('UoM')->nullable(); //gram dll
+            $table->string('notes')->nullable();
             $table->string('no_grpo')->nullable();
             $table->string('stock_opname_number')->nullable();
             $table->string('request_number')->nullable();

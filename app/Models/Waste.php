@@ -14,7 +14,7 @@ class Waste extends Model
         'prepared_by',
         'approve_area_manager',
         'approve_accounting',
-        'photo',
+        'waste_proof',
         'remark',
         'status',
         'store_location'
