@@ -21,10 +21,12 @@ return new class extends Migration
             $table->string('no_grpo')->nullable();
             $table->string('stock_opname_number')->nullable();
             $table->string('request_number')->nullable();
+            $table->string('doc_number')->nullable();
 
             $table->foreign('no_grpo')->references('no_grpo')->on('g_r_p_o_s');
             $table->foreign('stock_opname_number')->references('stock_opname_number')->on('stock_opnames');
             $table->foreign('request_number')->references('request_number')->on('material_requests');
+            $table->foreign('doc_number')->references('doc_number')->on('wastes');
             $table->timestamps();
         });
     }
