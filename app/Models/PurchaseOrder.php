@@ -16,12 +16,18 @@ class PurchaseOrder extends Model
         'no_purchase_order',
         'purchase_order_date',
         'supplier',
+        'shipper_by',
         'status'
     ];
 
     public function GRPOs(): HasOne
     {
         return $this->hasOne(GRPO::class, 'no_po');
+    }
+
+    public function purchaseOrderItems(): HasMany
+    {
+        return $this->hasMany(PurchaseOrderItem::class, 'no_purchase_order', 'no_purchase_order');
     }
 
     protected static function boot()

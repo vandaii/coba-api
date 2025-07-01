@@ -15,9 +15,10 @@ return new class extends Migration
         Schema::create('purchase_orders', function (Blueprint $table) {
             $table->id();
             $table->string('no_purchase_order')->unique();
-            $table->date('purchase_order_date')->nullable(false);
-            $table->string('supplier')->nullable(false);
-            $table->string('status')->nullable(false)->default('Shipping');
+            $table->date('purchase_order_date');
+            $table->string('supplier');
+            $table->string('shipper_by');
+            $table->string('status')->default('Shipping');
             $table->timestamps();
         });
     }
