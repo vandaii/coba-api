@@ -86,6 +86,10 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::prefix('waste')->group(function () {
+        Route::get('/', [WasteController::class, 'index']);
         Route::post('/add', [WasteController::class, 'store']);
+        Route::get('/{id}', [WasteController::class, 'show']);
+        Route::put('/{id}/approve-area-manager', [WasteController::class, 'approveAreaManager']);
+        Route::put('/{id}/approve-accounting', [WasteController::class, 'approveAccounting']);
     });
 });

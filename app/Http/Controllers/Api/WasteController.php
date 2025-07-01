@@ -11,6 +11,11 @@ use Illuminate\Support\Facades\Validator;
 
 class WasteController extends Controller
 {
+    public function index()
+    {
+        return Waste::with('items', 'storeLocation')->get();
+    }
+
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -76,6 +81,82 @@ class WasteController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Failed to create waste',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function show($id)
+    {
+        $waste = Waste::with('items', 'storeLocation')->findOrFail($id);
+        return $waste;
+    }
+
+    public function approveAreaManager(Request $request, $id)
+    {
+        try {
+            $user = $request->user();
+
+            if ($user->role !== 'Area Manager') {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Unauthorized. Only area manager can approve.',
+                ], 403);
+            }
+
+            $waste = Waste::findOrFail($id);
+            $waste->update([
+                'status' => 'Approved Area Manager',
+                'approve_area_manager' => true
+            ]);
+
+            return response()->json([
+                'message' => 'Waste has approved by Area Manager',
+                'data' => $waste
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'Approval failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function approveAccounting(Request $request, $id)
+    {
+        try {
+            $user = $request->user();
+            if ($user->role !== 'Accounting') {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Unauthorized. Only accounting can approve.'
+                ]);
+            }
+
+            $waste = Waste::findOrFail($id);
+            if (!$waste->approve_area_manager === true) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Waste must be approved by Area Manager first'
+                ]);
+            }
+
+            $waste->update([
+                'status' => 'Approved',
+                'approve_accounting' => true
+            ]);
+
+            return response()->json([
+                'message' => 'Waste has approved',
+                'data' => $waste
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'Approval failed',
                 'error' => $e->getMessage()
             ], 500);
         }
