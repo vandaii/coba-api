@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\WasteResource;
 use App\Models\Waste;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -11,9 +12,57 @@ use Illuminate\Support\Facades\Validator;
 
 class WasteController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return Waste::with('items', 'storeLocation')->get();
+        try {
+            $query = Waste::with(['items', 'storeLocation']);
+
+            // Search
+            if ($request->has('search')) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('doc_number', 'like', "%{$search}%")
+                        ->orWhere('remark', 'like', "%{$search}%")
+                        ->orWhereHas('storeLocation', function ($q2) use ($search) {
+                            $q2->where('store_name', 'like', "%{$search}%")
+                                ->orWhere('address', 'like', "%{$search}%");
+                        });
+                });
+            }
+
+            // Filter by status
+            if ($request->has('status')) {
+                $statuses = explode(',', $request->status);
+                $query->whereIn('status', $statuses);
+            }
+
+            // Filter berdasarkan tanggal
+            if ($request->has('start_date') && $request->has('end_date')) {
+                $query->whereBetween('created_at', [
+                    $request->start_date . ' 00:00:00',
+                    $request->end_date . ' 23:59:59'
+                ]);
+            }
+
+            // Sort by latest by default
+            $materialRequests = $query->latest()->paginate(10);
+
+            return response()->json([
+                'message' => 'Material request retrieved successfully',
+                'data' => WasteResource::collection($materialRequests->load('storeLocation')),
+                'meta' => [
+                    'current_page' => $materialRequests->currentPage(),
+                    'last_page' => $materialRequests->lastPage(),
+                    'total_records' => $materialRequests->total(),
+                    'per_page' => $materialRequests->perPage()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to retrieve stock opname',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function store(Request $request)
@@ -74,7 +123,7 @@ class WasteController extends Controller
             DB::commit();
             return response()->json([
                 'message' => 'Waste successfully added',
-                'data' => $waste
+                'data' => new WasteResource($waste)
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -89,7 +138,7 @@ class WasteController extends Controller
     public function show($id)
     {
         $waste = Waste::with('items', 'storeLocation')->findOrFail($id);
-        return $waste;
+        return new WasteResource($waste);
     }
 
     public function approveAreaManager(Request $request, $id)
@@ -112,7 +161,7 @@ class WasteController extends Controller
 
             return response()->json([
                 'message' => 'Waste has approved by Area Manager',
-                'data' => $waste
+                'data' => new WasteResource($waste)
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -150,7 +199,7 @@ class WasteController extends Controller
 
             return response()->json([
                 'message' => 'Waste has approved',
-                'data' => $waste
+                'data' => new WasteResource($waste)
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
