@@ -25,8 +25,10 @@ class PurchaseOrderSeeder extends Seeder
 
         // Create 10 purchase orders
         for ($i = 0; $i < 10; $i++) {
+            $expenseType = ['Inventory', 'Non Inventory'][rand(0, 1)];
             $po = PurchaseOrder::create([
                 'purchase_order_date' => now()->subDays(rand(0, 30)),
+                'expense_type' => $expenseType,
                 'supplier' => 'Supplier ' . ($i + 1),
                 'shipper_by' => 'Shipper ' . ($i + 1),
                 'status' => 'Shipping',
@@ -36,7 +38,7 @@ class PurchaseOrderSeeder extends Seeder
             $poItems = $items->random(rand(2, 5));
             foreach ($poItems as $item) {
                 PurchaseOrderItem::create([
-                    'no_purchase_order' => $po->no_purchase_order,
+                    'purchase_order_number' => $po->purchase_order_number,
                     'item_code' => $item->item_code,
                     'item_name' => $item->item_name,
                     'quantity' => rand(1, 20),

@@ -131,7 +131,7 @@ class GRPOController extends Controller
                 'expense_type' => $request->expense_type,
                 'receive_name' => Auth::check() && Auth::user() ? Auth::user()->name : null,
                 'supplier' => $purchaseOrder->supplier,
-                'shipper_name' => $request->shipper_name,
+                'shipper_name' => $purchaseOrder->shipper_by,
                 'status' => $request->status ?? 'Received',
                 'packing_slip' => json_encode($packingSlipPaths),
                 'notes' => $request->notes

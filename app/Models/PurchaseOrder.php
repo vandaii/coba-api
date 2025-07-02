@@ -13,8 +13,9 @@ class PurchaseOrder extends Model
     use HasFactory;
 
     protected $fillable = [
-        'no_purchase_order',
+        'purchase_order_number',
         'purchase_order_date',
+        'expense_type',
         'supplier',
         'shipper_by',
         'status'
@@ -27,7 +28,7 @@ class PurchaseOrder extends Model
 
     public function purchaseOrderItems(): HasMany
     {
-        return $this->hasMany(PurchaseOrderItem::class, 'no_purchase_order', 'no_purchase_order');
+        return $this->hasMany(PurchaseOrderItem::class, 'purchase_order_number', 'purchase_order_number');
     }
 
     protected static function boot()
@@ -38,18 +39,18 @@ class PurchaseOrder extends Model
             $prefix = 'PO-';
             $date = now()->format('Y');
 
-            $latestPurchase = static::where('no_purchase_order', 'like', $prefix . $date . '%')
-                ->orderBy('no_purchase_order', 'desc')
+            $latestPurchase = static::where('purchase_order_number', 'like', $prefix . $date . '%')
+                ->orderBy('purchase_order_number', 'desc')
                 ->first();
 
             if ($latestPurchase) {
-                $lastNumber = (int) substr($latestPurchase->no_purchase_order, -3);
+                $lastNumber = (int) substr($latestPurchase->purchase_order_number, -3);
                 $nextNumber = $lastNumber + 1;
             } else {
                 $nextNumber = 1;
             }
 
-            $model->no_purchase_order = $prefix . $date . sprintf('%03d', $nextNumber);
+            $model->purchase_order_number = $prefix . $date . sprintf('%03d', $nextNumber);
         });
     }
 }

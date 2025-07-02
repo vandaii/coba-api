@@ -10,7 +10,7 @@ class GRPO extends Model
 {
     protected $fillable = [
         'no_grpo',
-        'no_po',
+        'purchase_order_number',
         'purchase_order_date',
         'receive_date',
         'expense_type',
@@ -24,7 +24,7 @@ class GRPO extends Model
 
     public function purchaseOrder()
     {
-        return $this->belongsTo(PurchaseOrder::class, 'no_po', 'no_purchase_order');
+        return $this->belongsTo(PurchaseOrder::class, 'purchase_order_number', 'purchase_order_number');
     }
 
     public function Items(): HasMany

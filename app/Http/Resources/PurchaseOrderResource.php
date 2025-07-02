@@ -17,6 +17,7 @@ class PurchaseOrderResource extends JsonResource
         return [
             'purchaseOrderNumber' => $this->no_purchase_order,
             'purchaseOrderDate' => $this->purchase_order_date,
+            'expenseType' => $this->expense_type,
             'supplier' => $this->supplier,
             'shipperBy' => $this->shipper_by,
             'items' => PurchaseOrderItemResource::collection($this->purchaseOrderItems),

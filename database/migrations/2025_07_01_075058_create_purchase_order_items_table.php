@@ -19,9 +19,9 @@ return new class extends Migration
             $table->timestamps();
 
             $table->string('item_code');
-            $table->string('no_purchase_order');
+            $table->string('purchase_order_number');
             $table->foreign('item_code')->references('item_code')->on('items');
-            $table->foreign('no_purchase_order')->references('no_purchase_order')->on('purchase_orders');
+            $table->foreign('purchase_order_number')->references('purchase_order_number')->on('purchase_orders');
         });
     }
 

@@ -14,8 +14,9 @@ return new class extends Migration
     {
         Schema::create('purchase_orders', function (Blueprint $table) {
             $table->id();
-            $table->string('no_purchase_order')->unique();
+            $table->string('purchase_order_number')->unique();
             $table->date('purchase_order_date');
+            $table->string('expense_type')->default('Inventory');
             $table->string('supplier');
             $table->string('shipper_by');
             $table->string('status')->default('Shipping');
