@@ -20,9 +20,10 @@ return new class extends Migration
             $table->float('total_amount')->nullable();
             $table->string('purchase_proof')->nullable();
             $table->string('note')->nullable();
-            $table->string('status')->default('Pending Area Manager');
+            $table->string('status')->default('Pending'); //Pending, Approved Area Manager, Approved, Draft
             $table->boolean('approve_area_manager')->default(false);
             $table->boolean('approve_accounting')->default(false);
+            $table->text('remark_revision')->nullable();
 
             $table->timestamps();
         });

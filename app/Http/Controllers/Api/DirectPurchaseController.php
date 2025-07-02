@@ -151,11 +151,11 @@ class DirectPurchaseController extends Controller
         return new DirectPurchaseResource($directPurchase);
     }
 
-    public function destroy(Request $request, $id)
+    public function destroy($id)
     {
         $directPurchase = DirectPurchase::with('items')->findOrFail($id);
 
-        if ($directPurchase->approve_area_manager == true) {
+        if ($directPurchase->approve_area_manager == true && $directPurchase->approve_accounting == true) {
             return response()->json([
                 'message' => 'Direct Purchase has been approved by Area Manager'
             ], 409);
@@ -239,5 +239,56 @@ class DirectPurchaseController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function rejectApprove(Request $request, $id)
+    {
+        $user = $request->user();
+
+        if ($user->role == 'User Outlet') {
+            return response()->json([
+                'message' => 'Unauthorized.'
+            ], 422);
+        }
+
+        $directPurchase = DirectPurchase::with('items')->findOrFail($id);
+        $directPurchase->delete();
+        return response()->json([
+            'status' => 'success',
+            'message' => 'This purchase has been rejected'
+        ]);
+    }
+
+    public function revision(Request $request, $id)
+    {
+        $user = $request->user();
+
+        if ($user->role == 'User Outlet') {
+            return response()->json([
+                'message' => 'Unauthorized.'
+            ], 422);
+        }
+
+        $directPurchase = DirectPurchase::with('items')->findOrFail($id);
+        $validator = Validator::make($request->all(), [
+            'remark_revision' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ]);
+        }
+
+        $directPurchase->update([
+            'remark_revision' => $request->remark_revision,
+            'status' => 'Draft'
+        ]);
+
+        return response()->json([
+            'message' => 'This purchase have revision',
+            'data' => new DirectPurchaseResource($directPurchase)
+        ]);
     }
 }

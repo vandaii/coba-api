@@ -41,6 +41,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}/delete', [DirectPurchaseController::class, 'destroy']);
         Route::post('/{id}/approve-area-manager', [DirectPurchaseController::class, 'approveAreaManager']);
         Route::post('/{id}/approve-accounting', [DirectPurchaseController::class, 'approveAccounting']);
+        Route::delete('/{id}/reject', [DirectPurchaseController::class, 'rejectApprove']);
+        Route::put('/{id}/revision', [DirectPurchaseController::class, 'revision']);
     });
 
 

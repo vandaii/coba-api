@@ -17,6 +17,7 @@ class DirectPurchase extends Model
         'status',
         'approve_area_manager',
         'approve_accounting',
+        'remark_revision'
     ];
 
     public function items()
