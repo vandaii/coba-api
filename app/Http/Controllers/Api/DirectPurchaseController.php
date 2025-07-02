@@ -90,8 +90,8 @@ class DirectPurchaseController extends Controller
 
             $purchaseProofPaths = [];
             if ($request->hasFile('purchase_proof')) {
-                foreach ($request->file('purchase_proof') as $file) {
-                    $filename = time() . '_' . $file->getClientOriginalName();
+                foreach ($request->file('purchase_proof') as $index => $file) {
+                    $filename = 'PurchaseProof-' . ($index) . '.' . $file->getClientOriginalExtension();
                     $path = $file->storeAs('purchase_proofs', $filename, 'public');
                     $purchaseProofPaths[] = $path;
                 }
@@ -278,7 +278,7 @@ class DirectPurchaseController extends Controller
             return response()->json([
                 'message' => 'Validation failed',
                 'errors' => $validator->errors()
-            ]);
+            ], 422);
         }
 
         $directPurchase->update([
@@ -290,5 +290,93 @@ class DirectPurchaseController extends Controller
             'message' => 'This purchase have revision',
             'data' => new DirectPurchaseResource($directPurchase)
         ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $directPurchase = DirectPurchase::with('items')->findOrFail($id);
+        if ($directPurchase->status !== 'Draft') {
+            return response()->json([
+                'message' => 'Only draft can be update'
+            ], 409);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'date' => 'required',
+            'supplier' => 'required|string',
+            'expense_type' => 'required|string',
+            'items' => 'required|array|min:1',
+            'items.*.item_name' => 'required|string',
+            'items.*.item_description' => 'required|string',
+            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.price' => 'required|numeric|min:0',
+            'items.*.unit' => 'required|string',
+            'purchase_proof' => 'nullable|array|max:5',
+            'purchase_proof.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:5012',
+            'note' => 'string|nullable',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            $oldProofs = json_decode($directPurchase->purchase_proof ?? '[]', true);
+            $purchaseProofPaths = $oldProofs;
+            $startIndex = count($oldProofs);
+
+            if ($request->hasFile('purchase_proof')) {
+                foreach ($request->file('purchase_proof') as $i => $file) {
+                    $filename = 'PurchaseProof-' . ($startIndex + $i + 1) . '.' . $file->getClientOriginalExtension();
+                    $path = $file->storeAs('purchase_proofs', $filename, 'public');
+                    $purchaseProofPaths[] = $path;
+                }
+            }
+
+            $directPurchase->update([
+                'date' => $request->date,
+                'supplier' => $request->supplier,
+                'expense_type' => $request->expense_type,
+                'total_amount' => $request->total_amount,
+                'purchase_proof' => json_encode($purchaseProofPaths),
+                'note' => $request->note,
+                'status' => $request->status ?? 'Pending Area Manager',
+            ]);
+
+            if ($request->has('items')) {
+                $directPurchase->items()->delete();
+                $totalAmount = 0;
+                foreach ($request->items as $item) {
+                    $total_price = $item['quantity'] * $item['price'];
+                    $directPurchase->items()->create([
+                        'item_name' => $item['item_name'],
+                        'item_description' => $item['item_description'],
+                        'quantity' => $item['quantity'],
+                        'price' => $item['price'],
+                        'unit' => $item['unit'],
+                        'total_price' => $total_price,
+                    ]);
+                    $totalAmount += $total_price;
+                }
+                $directPurchase->update(['total_amount' => $totalAmount]);
+            }
+
+            DB::commit();
+            return response()->json([
+                'message' => 'Purchase successfully updated',
+                'data' => new DirectPurchaseResource($directPurchase)
+            ]);
+        } catch (\Exception $e) {
+            //Mengeluarkan data ketika gagal
+            DB::rollback();
+            return response()->json([
+                'message' => 'Failed to update direct purchase',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

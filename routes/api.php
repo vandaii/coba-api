@@ -43,6 +43,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{id}/approve-accounting', [DirectPurchaseController::class, 'approveAccounting']);
         Route::delete('/{id}/reject', [DirectPurchaseController::class, 'rejectApprove']);
         Route::put('/{id}/revision', [DirectPurchaseController::class, 'revision']);
+        Route::post('/{id}/update', [DirectPurchaseController::class, 'update']);
     });
 
 
