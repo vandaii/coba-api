@@ -18,7 +18,9 @@ class PurchaseOrderResource extends JsonResource
             'purchaseOrderNumber' => $this->no_purchase_order,
             'purchaseOrderDate' => $this->purchase_order_date,
             'supplier' => $this->supplier,
-            'status' => $this->status,
+            'shipperBy' => $this->shipper_by,
+            'items' => PurchaseOrderItemResource::collection($this->purchaseOrderItems),
+            'status' => $this->status
         ];
     }
 }
