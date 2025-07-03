@@ -16,7 +16,8 @@ class MaterialRequest extends Model
         'store_location',
         'status',
         'approve_area_manager',
-        'approve_accounting'
+        'approve_accounting',
+        'remark_revision'
     ];
 
     public function storeLocation(): BelongsTo
@@ -24,9 +25,9 @@ class MaterialRequest extends Model
         return $this->belongsTo(StoreLocation::class, 'store_location');
     }
 
-    public function items(): HasMany
+    public function materialRequestItems(): HasMany
     {
-        return $this->hasMany(Item::class, 'request_number', 'request_number');
+        return $this->hasMany(MaterialRequestItem::class, 'request_number', 'request_number');
     }
 
     protected static function boot()

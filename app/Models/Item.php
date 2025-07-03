@@ -27,6 +27,11 @@ class Item extends Model
         return $this->hasMany(GRPOItem::class, 'item_code', 'item_code');
     }
 
+    public function materialRequestItems(): HasMany
+    {
+        return $this->hasMany(MaterialRequestItem::class, 'item_code', 'item_code');
+    }
+
     protected static function boot()
     {
         parent::boot();

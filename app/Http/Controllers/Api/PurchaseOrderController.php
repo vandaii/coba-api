@@ -14,9 +14,9 @@ class PurchaseOrderController extends Controller
         return PurchaseOrderResource::collection(PurchaseOrder::all());
     }
 
-    public function show($id)
+    public function show($noPo)
     {
-        $purchaseOrder = PurchaseOrder::all()->findOrFail($id);
+        $purchaseOrder = PurchaseOrder::with('purchaseOrderItems')->where('purchase_order_number', $noPo)->first();
         return new PurchaseOrderResource($purchaseOrder);
     }
 }

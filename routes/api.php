@@ -49,7 +49,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('purchase-order')->group(function () {
         Route::get('/', [PurchaseOrderController::class, 'index']);
-        Route::get('/{id}', [PurchaseOrderController::class, 'show']);
+        Route::get('/{noPo}', [PurchaseOrderController::class, 'show']);
     });
 
     Route::prefix('grpo')->group(function () {

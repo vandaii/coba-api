@@ -14,7 +14,7 @@ class MaterialRequestController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = MaterialRequest::with(['items', 'storeLocation']);
+            $query = MaterialRequest::with(['materialRequestItems', 'storeLocation']);
 
             // Search
             if ($request->has('search')) {
@@ -200,7 +200,60 @@ class MaterialRequestController extends Controller
 
     public function show($id)
     {
-        $materialRequest = MaterialRequest::with(['items', 'storeLocation'])->findOrFail($id);
+        $materialRequest = MaterialRequest::with(['materialRequestItems', 'storeLocation'])->findOrFail($id);
         return new MaterialRequestResource($materialRequest->load('storeLocation'));
+    }
+
+    public function reject(Request $request, $id)
+    {
+        $user = $request->user();
+        if ($user->role == 'User Outlet') {
+            return response()->json([
+                'message' => 'Unauthorized.'
+            ], 422);
+        }
+
+        $materialRequest = MaterialRequest::with(['materialRequestItems', 'storeLocation'])->findOrFail($id);
+        $materialRequest->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'This request has been rejected',
+        ]);
+    }
+
+    public function revision(Request $request, $id)
+    {
+        $user = $request->user();
+        if ($user->role == 'User Outlet') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized'
+            ], 403);
+        }
+
+        $materialRequest = MaterialRequest::with(['materialRequestItems', 'storeLocation'])->findOrFail($id);
+        $validator = Validator::make($request->all(), [
+            'remark_revision' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation failed',
+                'error' => $validator->errors()
+            ], 422);
+        }
+
+        $materialRequest->update([
+            'remark_revision' => $request->remark_revision,
+            'status' => 'Draft'
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'This request have revision',
+            'data' => new MaterialRequestResource($materialRequest)
+        ]);
     }
 }

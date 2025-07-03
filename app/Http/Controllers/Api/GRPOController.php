@@ -91,11 +91,11 @@ class GRPOController extends Controller
             'packing_slip' => 'nullable|array|max:5',
             'packing_slip.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg|max:5012',
             'notes' => 'nullable|string',
-            'grpoItems' => 'required|array|min:1',
-            'grpoItems.*.item_code' => 'required',
-            'grpoItems.*.item_name' => 'required|string',
-            'grpoItems.*.quantity' => 'required|integer|min:1',
-            'grpoItems.*.unit' => 'required',
+            'items' => 'required|array|min:1',
+            'items.*.item_code' => 'required',
+            'items.*.item_name' => 'required|string',
+            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.unit' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -137,7 +137,7 @@ class GRPOController extends Controller
                 'notes' => $request->notes
             ]);
 
-            foreach ($request->grpoItems as $itemData) {
+            foreach ($request->items as $itemData) {
                 $purchaseOrderItems = PurchaseOrderItem::where('purchase_order_number', $request->purchase_order_number)->get();
                 // Get item from items table
                 $item = Item::where('item_code', $itemData['item_code'])->first();

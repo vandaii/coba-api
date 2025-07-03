@@ -20,10 +20,11 @@ class MaterialRequestResource extends JsonResource
             'requestDate' => $this->request_date,
             'dueDate' => $this->due_date,
             'storeLocation' => new StoreLocationResource($this->whenLoaded('storeLocation')),
-            'items' => ItemResource::collection($this->items),
+            'items' => MaterialRequestItemResource::collection($this->materialRequestItems),
             'reason' => $this->reason,
             'approveAreaManager' => $this->approve_area_manager,
             'approveAccounting' => $this->approve_accounting,
+            'remarkRevision' => $this->remark_revision,
             'status' => $this->status
         ];
     }

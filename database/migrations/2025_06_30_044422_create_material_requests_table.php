@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('status')->default('Pending'); //Pending, Approve Accounting, Approve Area manager
             $table->boolean('approve_area_manager')->default(false);
             $table->boolean('approve_accounting')->default(false);
+            $table->text('remark_revision')->nullable();
             $table->timestamps();
 
             $table->unsignedBigInteger('store_location');
