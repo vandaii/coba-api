@@ -12,12 +12,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\PurchaseOrderResource;
 use App\Http\Controllers\Controller;
+use App\Models\PurchaseOrderItem;
 
 class GRPOController extends Controller
 {
     public function index()
     {
-        return GRPOResource::collection(GRPO::with('items')->get());
+        return GRPOResource::collection(GRPO::with('grpoItems')->get());
     }
 
     public function search(Request $request)
@@ -83,18 +84,18 @@ class GRPOController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'no_po' => 'required|exists:purchase_orders,no_purchase_order',
+            'purchase_order_number' => 'required|exists:purchase_orders,purchase_order_number',
             'receive_date' => 'required|date',
             'expense_type' => 'required',
             'shipper_name' => 'required|string',
             'packing_slip' => 'nullable|array|max:5',
             'packing_slip.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg|max:5012',
             'notes' => 'nullable|string',
-            'items' => 'required|array|min:1',
-            'items.*.item_code' => 'required',
-            'items.*.item_name' => 'required|string',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.unit' => 'required',
+            'grpoItems' => 'required|array|min:1',
+            'grpoItems.*.item_code' => 'required',
+            'grpoItems.*.item_name' => 'required|string',
+            'grpoItems.*.quantity' => 'required|integer|min:1',
+            'grpoItems.*.unit' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -117,18 +118,17 @@ class GRPOController extends Controller
             }
 
             // Get Purchase Order
-            $purchaseOrder = PurchaseOrder::where('no_purchase_order', $request->no_po)
+            $purchaseOrder = PurchaseOrder::with('purchaseOrderItems')->where('purchase_order_number', $request->purchase_order_number)
                 ->where('status', '!=', 'Received')
                 ->firstOrFail();
 
-
             // Create a new GRPO record
             $grpo = GRPO::create([
-                'no_grpo' => 'GR-' . (strlen($request->no_po) > 3 ? substr($request->no_po, 3) : $request->no_po),
-                'no_po' => $request->no_po,
+                'grpo_number' => 'GR-' . (strlen($request->purchase_order_number) > 3 ? substr($request->purchase_order_number, 3) : $request->purchase_order_number),
+                'purchase_order_number' => $request->purchase_order_number,
                 'purchase_order_date' => $purchaseOrder->purchase_order_date,
                 'receive_date' => $request->receive_date,
-                'expense_type' => $request->expense_type,
+                'expense_type' => $purchaseOrder->expense_type,
                 'receive_name' => Auth::check() && Auth::user() ? Auth::user()->name : null,
                 'supplier' => $purchaseOrder->supplier,
                 'shipper_name' => $purchaseOrder->shipper_by,
@@ -137,25 +137,26 @@ class GRPOController extends Controller
                 'notes' => $request->notes
             ]);
 
-            // Get item from items table
-            // $item = Item::where('item_code', $itemData['item_code'])->first();
+            foreach ($request->grpoItems as $itemData) {
+                $purchaseOrderItems = PurchaseOrderItem::where('purchase_order_number', $request->purchase_order_number)->get();
+                // Get item from items table
+                $item = Item::where('item_code', $itemData['item_code'])->first();
+                if (!$item) {
+                    throw new \Exception("Item not found: {$itemData['item_code']}");
+                }
 
-            // if (!$item) {
-            //     throw new \Exception("Item not found: {$itemData['item_code']}");
-            // }
-
-            foreach ($request->items as $itemData) {
-                $grpo->items()->create([
+                $grpo->grpoItems()->create([
                     'item_code' => $itemData['item_code'],
                     'item_name' => $itemData['item_name'],
                     'quantity' => $itemData['quantity'],
                     'unit' => $itemData['unit'],
-                    'no_grpo' => $grpo->no_grpo
+                    'grpo_number' => $grpo->grpo_number
                 ]);
             }
 
             DB::commit();
 
+            $purchaseOrder->purchaseOrderItems()->delete();
             $purchaseOrder->delete();
 
             return response()->json([

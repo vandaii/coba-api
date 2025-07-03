@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class GRPO extends Model
 {
     protected $fillable = [
-        'no_grpo',
+        'grpo_number',
         'purchase_order_number',
         'purchase_order_date',
         'receive_date',
@@ -27,8 +27,8 @@ class GRPO extends Model
         return $this->belongsTo(PurchaseOrder::class, 'purchase_order_number', 'purchase_order_number');
     }
 
-    public function Items(): HasMany
+    public function grpoItems(): HasMany
     {
-        return $this->hasMany(Item::class, 'no_grpo', 'no_grpo');
+        return $this->hasMany(GRPOItem::class, 'grpo_number', 'grpo_number');
     }
 }

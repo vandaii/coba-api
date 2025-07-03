@@ -5,22 +5,22 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class PurchaseOrderItem extends Model
+class GRPOItem extends Model
 {
     protected $fillable = [
         'item_code',
         'item_name',
         'quantity',
         'unit',
-        'purchase_order_number'
+        'grpo_number'
     ];
 
-    public function purchaseOrder(): BelongsTo
+    public function grpos(): BelongsTo
     {
-        return $this->belongsTo(PurchaseOrder::class, 'purchase_order_number', 'purchase_order_number');
+        return $this->belongsTo(GRPO::class, 'grpo_number', 'grpo_number');
     }
 
-    public function item(): BelongsTo
+    public function items(): BelongsTo
     {
         return $this->belongsTo(Item::class, 'item_code', 'item_code');
     }

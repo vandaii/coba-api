@@ -15,7 +15,7 @@ class PurchaseOrderResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'purchaseOrderNumber' => $this->no_purchase_order,
+            'purchaseOrderNumber' => $this->purchase_order_number,
             'purchaseOrderDate' => $this->purchase_order_date,
             'expenseType' => $this->expense_type,
             'supplier' => $this->supplier,
