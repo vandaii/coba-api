@@ -17,7 +17,7 @@ return new class extends Migration
             $table->date('request_date');
             $table->date('due_date');
             $table->text('reason')->nullable();
-            $table->string('status')->default('Pending'); //Pending, Approve Accounting, Approve Area manager
+            $table->string('status')->default('Pending'); //Pending, Approve Accounting, Approve Area manager, Draft
             $table->boolean('approve_area_manager')->default(false);
             $table->boolean('approve_accounting')->default(false);
             $table->text('remark_revision')->nullable();
