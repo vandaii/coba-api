@@ -252,6 +252,15 @@ class DirectPurchaseController extends Controller
         }
 
         $directPurchase = DirectPurchase::with('items')->findOrFail($id);
+
+        if ($directPurchase->approve_area_manager == true) {
+            if ($user->role == 'Approve Area Manager') {
+                return response()->json([
+                    'message' => "You've been approved this purchase"
+                ], 422);
+            }
+        }
+
         $directPurchase->delete();
         return response()->json([
             'status' => 'success',

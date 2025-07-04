@@ -227,6 +227,13 @@ class MaterialRequestController extends Controller
         }
 
         $materialRequest = MaterialRequest::with(['materialRequestItems', 'storeLocation'])->findOrFail($id);
+        if ($materialRequest->approve_area_manager == true) {
+            if ($user->role == 'Approve Area Manager') {
+                return response()->json([
+                    'message' => "You've been approved this purchase"
+                ], 422);
+            }
+        }
         $materialRequest->delete();
 
         return response()->json([
