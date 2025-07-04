@@ -283,6 +283,7 @@ class MaterialRequestController extends Controller
             'request_date' => 'required',
             'due_date' => 'required',
             'reason' => 'nullable',
+            'remark_revision' => 'nullable',
             'items' => 'required|array|min:1',
             'items.*.item_code' => 'required',
             'items.*.item_name' => 'required|string',
@@ -309,6 +310,7 @@ class MaterialRequestController extends Controller
                 'due_date' => $request->due_date,
                 'store_location' => $storeLocation,
                 'reason' => $request->reason,
+                'remark_revision' => $request->remark_revision,
                 'status' => 'Pending',
                 'approve_area_manager' => false,
                 'approve_accounting' => false

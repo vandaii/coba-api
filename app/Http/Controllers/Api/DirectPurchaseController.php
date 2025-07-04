@@ -344,7 +344,10 @@ class DirectPurchaseController extends Controller
                 'total_amount' => $request->total_amount,
                 'purchase_proof' => json_encode($purchaseProofPaths),
                 'note' => $request->note,
-                'status' => $request->status ?? 'Pending Area Manager',
+                'remark_revision' => $request->remark_revision,
+                'status' => 'Pending Area Manager',
+                'approve_area_manager' => false,
+                'approve_accounting' => false
             ]);
 
             if ($request->has('items')) {
