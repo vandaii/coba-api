@@ -145,6 +145,12 @@ class GRPOController extends Controller
                     throw new \Exception("Item not found: {$itemData['item_code']}");
                 }
 
+                if ($item['item_name'] !== $itemData['item_name'] || $item['UoM'] !== $itemData['unit']) {
+                    return response()->json([
+                        'message' => 'Nama item atau unit tidak sesuai dengan item code.'
+                    ], 422);
+                }
+
                 $grpo->grpoItems()->create([
                     'item_code' => $itemData['item_code'],
                     'item_name' => $itemData['item_name'],

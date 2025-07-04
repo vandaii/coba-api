@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Psy\CodeCleaner\AssignThisVariablePass;
 
 class Item extends Model
 {
@@ -30,6 +31,11 @@ class Item extends Model
     public function materialRequestItems(): HasMany
     {
         return $this->hasMany(MaterialRequestItem::class, 'item_code', 'item_code');
+    }
+
+    public function stockOpnameItems(): HasMany
+    {
+        return $this->hasMany(StockOpnameItem::class, 'item_code', 'item_code');
     }
 
     protected static function boot()

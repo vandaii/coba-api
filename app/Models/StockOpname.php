@@ -18,9 +18,9 @@ class StockOpname extends Model
         'status'
     ];
 
-    public function items(): HasMany
+    public function stockOpnameItems(): HasMany
     {
-        return $this->hasMany(Item::class, 'stock_opname_number', 'stock_opname_number');
+        return $this->hasMany(StockOpnameItem::class, 'stock_opname_number', 'stock_opname_number');
     }
 
     public function storeLocation(): BelongsTo

@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Http\Resources\StockOpnameResource;
+use App\Models\Item;
 use App\Models\StockOpname;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Resources\StockOpnameResource;
 
 class StockOpnameController extends Controller
 {
     public function index(Request $request)
     {
         try {
-            $query = StockOpname::with(['items', 'storeLocation']);
+            $query = StockOpname::with(['stockOpnameItems', 'storeLocation']);
 
             // Search
             if ($request->has('search')) {
@@ -99,16 +100,25 @@ class StockOpnameController extends Controller
                 'counted_by' => $request->counted_by,
                 'prepared_by' => Auth::check() && Auth::user() ? Auth::user()->name : null,
                 'store_location' => $storeLocation,
-                'status' => $request->status ?? 'On Going'
+                'status' => 'On Going'
             ]);
 
             foreach ($request->items as $item) {
-                $stockOpname->items()->create([
+                $itemCode = Item::where('item_code', $item['item_code'])->first();
+                if (!$itemCode) {
+                    throw new \Exception("Item not found: {$item['item_code']}");
+                }
+
+                if ($itemCode['item_name'] !== $item['item_name'] || $itemCode['UoM'] !== $item['UoM']) {
+                    return response()->json([
+                        'message' => 'Nama item atau unit tidak sesuai dengan item code.'
+                    ], 422);
+                }
+                $stockOpname->stockOpnameItems()->create([
                     'item_code' => $item['item_code'],
                     'item_name' => $item['item_name'],
                     'quantity' => $item['quantity'],
                     'UoM' => $item['UoM'],
-                    'unit' => $item['unit'],
                     'stock_opname_number' => $stockOpname->stock_opname_number
                 ]);
             }
@@ -130,7 +140,7 @@ class StockOpnameController extends Controller
 
     public function show($id)
     {
-        $stockOpname = StockOpname::with('items')->findOrFail($id);
+        $stockOpname = StockOpname::with(['stockOpnameItems', 'storeLocation'])->findOrFail($id);
         return new StockOpnameResource($stockOpname);
     }
 }
