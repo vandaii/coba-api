@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('item_code');
             $table->foreign('item_code')->references('item_code')->on('items');
             $table->string('request_number');
-            $table->foreign('request_number')->references('request_number')->on('material_requests');
+            $table->foreign('request_number')->references('request_number')->on('material_requests')->onDelete('cascade');
         });
     }
 

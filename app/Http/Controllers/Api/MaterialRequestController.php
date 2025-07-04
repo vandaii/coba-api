@@ -107,11 +107,18 @@ class MaterialRequestController extends Controller
                     throw new \Exception("Item not found: {$item['item_code']}");
                 }
 
-                $materialRequest->items()->create([
+                if ($itemCode['item_name'] !== $item['item_name'] || $itemCode['UoM'] !== $item['unit']) {
+                    return response()->json([
+                        'message' => 'Nama item atau unit tidak sesuai dengan item code.'
+                    ], 422);
+                }
+
+                $materialRequest->materialRequestItems()->create([
                     'item_code' => $item['item_code'],
                     'item_name' => $item['item_name'],
                     'quantity' => $item['quantity'],
                     'unit' => $item['unit'],
+                    'request_number' => $materialRequest->request_number
                 ]);
             }
 
@@ -210,7 +217,7 @@ class MaterialRequestController extends Controller
         return new MaterialRequestResource($materialRequest->load('storeLocation'));
     }
 
-    public function reject(Request $request, $id)
+    public function rejectRequest(Request $request, $id)
     {
         $user = $request->user();
         if ($user->role == 'User Outlet') {
@@ -316,11 +323,18 @@ class MaterialRequestController extends Controller
                         throw new \Exception("Item not found: {$item['item_code']}");
                     }
 
+                    if ($itemCode['item_name'] !== $item['item_name'] || $itemCode['UoM'] !== $item['unit']) {
+                        return response()->json([
+                            'message' => 'Nama item atau unit tidak sesuai dengan item code.'
+                        ], 422);
+                    }
+
                     $materialRequest->materialRequestItems()->create([
                         'item_code' => $item['item_code'],
                         'item_name' => $item['item_name'],
                         'quantity' => $item['quantity'],
                         'unit' => $item['unit'],
+                        'request_number' => $materialRequest->request_number
                     ]);
                 }
 

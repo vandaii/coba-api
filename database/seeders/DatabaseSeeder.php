@@ -21,9 +21,9 @@ class DatabaseSeeder extends Seeder
         // ]);
 
         $this->call([
+            ItemSeeder::class,
             StoreLocationSeeder::class,
             PurchaseOrderSeeder::class,
-            ItemSeeder::class
         ]);
     }
 }

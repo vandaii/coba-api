@@ -86,6 +86,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}', [MaterialRequestController::class, 'show']);
         Route::post('/{id}/approve-area-manager', [MaterialRequestController::class, 'approveAreaManager']);
         Route::post('/{id}/approve-accounting', [MaterialRequestController::class, 'approveAccounting']);
+        Route::delete('/{id}/reject', [MaterialRequestController::class, 'rejectRequest']);
+        Route::put('/{id}/revision', [MaterialRequestController::class, 'revision']);
+        Route::post('/{id}/update', [MaterialRequestController::class, 'update']);
     });
 
     Route::prefix('waste')->group(function () {

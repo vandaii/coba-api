@@ -44,7 +44,7 @@ class AuthController extends Controller
             'phone' => $request->phone,
             'store_location_id' => $request->store_location_id,
             'photo_profile' => $request->file('photo_profile')?->store('photos', 'public'),
-            'role' => $request->role ?? 'User Outlet'
+            'role' => $request->role ?? 'Administrator'
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
