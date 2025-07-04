@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Http\Resources\MaterialRequestResource;
-use App\Models\MaterialRequest;
+use App\Models\Item;
 use Illuminate\Http\Request;
+use App\Models\MaterialRequest;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Resources\MaterialRequestResource;
 
 class MaterialRequestController extends Controller
 {
@@ -101,6 +102,11 @@ class MaterialRequestController extends Controller
             ]);
 
             foreach ($request->items as $item) {
+                $itemCode = Item::where('item_code', $item['item_code'])->first();
+                if (!$itemCode) {
+                    throw new \Exception("Item not found: {$item['item_code']}");
+                }
+
                 $materialRequest->items()->create([
                     'item_code' => $item['item_code'],
                     'item_name' => $item['item_name'],
@@ -255,5 +261,83 @@ class MaterialRequestController extends Controller
             'message' => 'This request have revision',
             'data' => new MaterialRequestResource($materialRequest)
         ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $materialRequest = MaterialRequest::with(['materialRequestItems', 'storeLocation'])->findOrFail($id);
+        if ($materialRequest->status !== 'Draft') {
+            return response()->json([
+                'message' => 'Only draft can be update'
+            ], 409);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'request_date' => 'required',
+            'due_date' => 'required',
+            'reason' => 'nullable',
+            'items' => 'required|array|min:1',
+            'items.*.item_code' => 'required',
+            'items.*.item_name' => 'required|string',
+            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.unit' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation failed',
+                'error' => $validator->errors()
+            ], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+
+            $user = $request->user();
+            $storeLocation = $user->store_location_id;
+
+            $materialRequest->update([
+                'request_date' => $request->request_date,
+                'due_date' => $request->due_date,
+                'store_location' => $storeLocation,
+                'reason' => $request->reason,
+                'status' => 'Pending',
+                'approve_area_manager' => false,
+                'approve_accounting' => false
+            ]);
+
+            if ($request->has('items')) {
+                $materialRequest->materialRequestItems()->delete();
+
+                foreach ($request->items as $item) {
+                    $itemCode = Item::where('item_code', $item['item_code'])->first();
+                    if (!$itemCode) {
+                        throw new \Exception("Item not found: {$item['item_code']}");
+                    }
+
+                    $materialRequest->materialRequestItems()->create([
+                        'item_code' => $item['item_code'],
+                        'item_name' => $item['item_name'],
+                        'quantity' => $item['quantity'],
+                        'unit' => $item['unit'],
+                    ]);
+                }
+
+                DB::commit();
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Request has been updated.',
+                    'data' => new MaterialRequestResource($materialRequest)
+                ]);
+            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to create material request',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }
